@@ -1,0 +1,1741 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plateforme Multi-Agences · Godot & Fils</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #C9A84C;
+  --gold-light: #E8CC84;
+  --gold-dim: rgba(201,168,76,0.15);
+  --dark: #0C0B09;
+  --dark2: #141310;
+  --dark3: #1C1A16;
+  --dark4: #242218;
+  --cream: #F0E8D4;
+  --cream-dim: rgba(240,232,212,0.6);
+  --cream-faint: rgba(240,232,212,0.12);
+  --muted: rgba(240,232,212,0.4);
+  --border: rgba(201,168,76,0.2);
+  --border-dim: rgba(240,232,212,0.08);
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; font-size: 16px; }
+
+body {
+  background: var(--dark);
+  color: var(--cream);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* ── NAV ─────────────────────────────── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(12,11,9,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-dim);
+  padding: 0 32px;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.nav-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+}
+
+.nav-links a {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 5px 11px;
+  border-radius: 6px;
+  transition: color .2s, background .2s;
+}
+
+.nav-links a:hover {
+  color: var(--cream);
+  background: var(--cream-faint);
+}
+
+.nav-date {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+}
+
+/* ── HERO ─────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 64px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 80% 30%, rgba(201,168,76,0.07) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 70%, rgba(201,168,76,0.04) 0%, transparent 60%);
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(240,232,212,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(240,232,212,0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 24px;
+  opacity: 0;
+  animation: fadeUp .6s ease forwards .2s;
+}
+
+.hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(48px, 7vw, 88px);
+  line-height: 1.05;
+  color: var(--cream);
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp .7s ease forwards .35s;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--gold);
+}
+
+.hero-sub {
+  font-size: 17px;
+  font-weight: 300;
+  color: var(--cream-dim);
+  max-width: 560px;
+  line-height: 1.65;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: fadeUp .7s ease forwards .5s;
+}
+
+.hero-meta {
+  display: flex;
+  gap: 32px;
+  opacity: 0;
+  animation: fadeUp .7s ease forwards .65s;
+}
+
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.hero-stat-num {
+  font-family: 'DM Serif Display', serif;
+  font-size: 32px;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.hero-stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
+}
+
+.hero-scroll {
+  position: absolute;
+  bottom: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: bounce 2s ease infinite;
+}
+
+.hero-scroll::after {
+  content: '';
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(var(--gold), transparent);
+}
+
+/* ── LAYOUT ─────────────────────────────── */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 48px;
+}
+
+section {
+  padding: 100px 0;
+  border-top: 1px solid var(--border-dim);
+}
+
+.section-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.1;
+  color: var(--cream);
+  margin-bottom: 16px;
+}
+
+.section-title em { font-style: italic; color: var(--gold); }
+
+.section-lead {
+  font-size: 16px;
+  color: var(--cream-dim);
+  max-width: 600px;
+  line-height: 1.7;
+  margin-bottom: 60px;
+}
+
+/* ── CONTEXT CARDS ─────────────────────────────── */
+.context-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ctx-card {
+  background: var(--dark2);
+  padding: 32px;
+  transition: background .2s;
+}
+
+.ctx-card:hover { background: var(--dark3); }
+
+.ctx-card.full { grid-column: 1 / -1; }
+
+.ctx-icon {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  background: var(--gold-dim);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.ctx-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+
+.ctx-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.ctx-text {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.ctx-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.tag {
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  background: var(--gold-dim);
+  font-weight: 500;
+}
+
+.tag.neutral {
+  border-color: var(--border-dim);
+  color: var(--muted);
+  background: transparent;
+}
+
+/* ── TRANSIT STEPPER ─────────────────────────────── */
+.stepper-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--border-dim);
+  cursor: pointer;
+  transition: opacity .2s;
+  opacity: 0.4;
+}
+
+.step:last-child { border-bottom: none; }
+
+.step.active { opacity: 1; }
+.step.done { opacity: 0.65; }
+.step.done:hover, .step.active:hover { opacity: 1; }
+
+.step-num {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border-dim);
+  background: var(--dark3);
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: all .25s;
+}
+
+.step.active .step-num {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--dark);
+}
+
+.step.done .step-num {
+  background: rgba(201,168,76,0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.step-body { flex: 1; }
+
+.step-actor {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 100px;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.actor-G { background: rgba(200,140,60,0.2); color: #E8A84C; }
+.actor-F { background: rgba(80,140,200,0.2); color: #7BBCE8; }
+.actor-P { background: rgba(100,180,120,0.2); color: #80C894; }
+.actor-S { background: rgba(150,130,110,0.2); color: #B8A880; }
+
+.step-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.step-detail {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height .3s ease;
+}
+
+.step.active .step-detail,
+.step.done .step-detail { max-height: 80px; }
+
+/* Panel */
+.step-panel {
+  position: sticky;
+  top: 80px;
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+}
+
+.panel-phase {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 20px;
+}
+
+.panel-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.flow-node {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border-dim);
+  background: var(--dark3);
+  font-size: 13px;
+  color: var(--cream-dim);
+  transition: all .2s;
+}
+
+.flow-node.highlighted {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  color: var(--cream);
+}
+
+.flow-node.done-node {
+  border-color: rgba(201,168,76,0.35);
+  background: rgba(201,168,76,0.08);
+  color: var(--muted);
+}
+
+.flow-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.panel-note {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-dim);
+}
+
+.panel-cta {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.btn-primary {
+  background: var(--gold);
+  color: var(--dark);
+}
+.btn-primary:hover { background: var(--gold-light); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--border-dim);
+}
+.btn-ghost:hover { background: var(--cream-faint); color: var(--cream); }
+
+/* ── ARCHITECTURE ─────────────────────────────── */
+.arch-diagram {
+  background: var(--dark2);
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.arch-diagram::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.arch-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0;
+}
+
+.arch-node {
+  border-radius: 10px;
+  border: 1px solid;
+  padding: 16px 22px;
+  text-align: center;
+  position: relative;
+  transition: transform .2s;
+}
+
+.arch-node:hover { transform: translateY(-2px); }
+
+.arch-node.admin {
+  border-color: var(--gold);
+  background: var(--gold-dim);
+  min-width: 240px;
+}
+
+.arch-node.agency {
+  border-color: var(--border-dim);
+  background: var(--dark3);
+  min-width: 180px;
+}
+
+.arch-node-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+
+.arch-node-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 4px;
+}
+
+.arch-node-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.arch-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.arch-trunk {
+  width: 1px;
+  height: 32px;
+  background: var(--border);
+}
+
+.arch-branches {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  justify-content: center;
+}
+
+.arch-branches::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 90px);
+  height: 1px;
+  background: var(--border);
+}
+
+.arch-branch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.arch-branch-line {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+}
+
+.arch-transit {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed rgba(201,168,76,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.arch-transit-badge {
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px dashed var(--border);
+  font-size: 11px;
+  color: var(--gold);
+}
+
+/* ── MODULES GRID ─────────────────────────────── */
+.modules-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.mod-card {
+  background: var(--dark2);
+  padding: 28px;
+  transition: background .2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.mod-card:hover { background: var(--dark3); }
+
+.mod-card.wide { grid-column: span 2; }
+
+.mod-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: transparent;
+  transition: background .2s;
+}
+
+.mod-card.ph1::after { background: var(--gold); }
+.mod-card.ph2::after { background: rgba(120,160,200,0.7); }
+.mod-card.ph3::after { background: rgba(100,180,120,0.7); }
+
+.mod-phase {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.ph1 .mod-phase { color: var(--gold); }
+.ph2 .mod-phase { color: #7BBCE8; }
+.ph3 .mod-phase { color: #80C894; }
+
+.mod-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 10px;
+  line-height: 1.3;
+}
+
+.mod-desc {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin-bottom: 14px;
+}
+
+.mod-features {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.mod-features li {
+  font-size: 12px;
+  color: var(--muted);
+  padding-left: 14px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.mod-features li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  color: var(--gold);
+}
+
+/* ── NOTIFICATIONS ─────────────────────────────── */
+.notif-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.notif-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notif-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--dark2);
+  border: 1px solid var(--border-dim);
+  transition: border-color .2s;
+}
+
+.notif-row:hover { border-color: var(--border); }
+
+.notif-icon {
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.notif-icon.gold { background: var(--gold-dim); }
+.notif-icon.blue { background: rgba(80,140,200,0.15); }
+.notif-icon.green { background: rgba(100,180,120,0.15); }
+
+.notif-content { flex: 1; }
+
+.notif-who {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  margin-bottom: 2px;
+}
+
+.notif-text {
+  font-size: 13px;
+  color: var(--cream-dim);
+  line-height: 1.5;
+}
+
+/* ── ROADMAP ─────────────────────────────── */
+.roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rm-item {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+
+.rm-num {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  color: var(--gold);
+  flex-shrink: 0;
+  background: var(--gold-dim);
+}
+
+.rm-body {
+  flex: 1;
+  padding: 24px;
+  background: var(--dark2);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-dim);
+  transition: border-color .2s;
+}
+
+.rm-body:hover { border-color: var(--border); }
+
+.rm-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+.rm-item:nth-child(1) .rm-label { color: var(--gold); }
+.rm-item:nth-child(2) .rm-label { color: #7BBCE8; }
+.rm-item:nth-child(3) .rm-label { color: #80C894; }
+.rm-item:nth-child(4) .rm-label { color: var(--muted); }
+
+.rm-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 10px;
+}
+
+.rm-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rm-chip {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  border: 1px solid var(--border-dim);
+  color: var(--muted);
+}
+
+/* ── PRINCIPLES ─────────────────────────────── */
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  border: 1px solid var(--border-dim);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.princ-card {
+  padding: 28px;
+  background: var(--dark2);
+  transition: background .2s;
+}
+
+.princ-card:hover { background: var(--dark3); }
+
+.princ-icon {
+  font-size: 24px;
+  margin-bottom: 14px;
+}
+
+.princ-title {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 8px;
+}
+
+.princ-text {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* ── LEGAL NOTE ─────────────────────────────── */
+.legal-box {
+  background: var(--dark2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.legal-icon {
+  width: 48px; height: 48px;
+  border-radius: 10px;
+  background: var(--gold-dim);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.legal-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--cream);
+  margin-bottom: 8px;
+}
+
+.legal-text {
+  font-size: 14px;
+  color: var(--cream-dim);
+  line-height: 1.7;
+}
+
+/* ── FOOTER ─────────────────────────────── */
+footer {
+  border-top: 1px solid var(--border-dim);
+  padding: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.footer-brand {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  color: var(--gold);
+}
+
+.footer-meta {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ── ANIMATIONS ─────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50%       { transform: translateX(-50%) translateY(6px); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity .6s ease, transform .6s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: none;
+}
+
+/* ── DIVIDER ─────────────────────────────── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-dim);
+}
+
+/* ── STATUS CHIPS ─────────────────────────────── */
+.status-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.status-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 10px;
+  border-radius: 100px;
+  border: 1px solid;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-chip .dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.s-transit { border-color: rgba(200,140,60,0.4); color: #E8A84C; background: rgba(200,140,60,0.1); }
+.s-transit .dot { background: #E8A84C; }
+.s-received { border-color: rgba(80,140,200,0.4); color: #7BBCE8; background: rgba(80,140,200,0.1); }
+.s-received .dot { background: #7BBCE8; }
+.s-paid { border-color: rgba(100,180,120,0.4); color: #80C894; background: rgba(100,180,120,0.1); }
+.s-paid .dot { background: #80C894; }
+.s-pending { border-color: rgba(150,130,110,0.3); color: var(--muted); background: rgba(150,130,110,0.08); }
+.s-pending .dot { background: var(--muted); }
+
+/* ── RESPONSIVE ─────────────────────────────── */
+@media (max-width: 900px) {
+  .hero { padding: 0 24px 60px; }
+  .container { padding: 0 24px; }
+  .stepper-wrapper { grid-template-columns: 1fr; }
+  .step-panel { display: none; }
+  .modules-grid { grid-template-columns: 1fr 1fr; }
+  .mod-card.wide { grid-column: span 2; }
+  .context-grid { grid-template-columns: 1fr; }
+  .notif-section { grid-template-columns: 1fr; }
+  .principles { grid-template-columns: 1fr; }
+  footer { flex-direction: column; gap: 16px; text-align: center; }
+  .footer-meta { text-align: center; }
+}
+
+@media (max-width: 600px) {
+  .modules-grid { grid-template-columns: 1fr; }
+  .mod-card.wide { grid-column: span 1; }
+  .nav-links { display: none; }
+  .hero-meta { gap: 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <span class="nav-dot"></span>
+    Godot & Fils · Brief Projet
+  </a>
+  <ul class="nav-links">
+    <li><a href="#context">Contexte</a></li>
+    <li><a href="#transit">Transit</a></li>
+    <li><a href="#architecture">Architecture</a></li>
+    <li><a href="#modules">Modules</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+  </ul>
+  <span class="nav-date">18 mars 2026</span>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="top">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-eyebrow">Compte-rendu · RDV Pietro × Yanis</div>
+  <h1 class="hero-title">
+    Plateforme <em>multi-agences</em><br>
+    Godot & Fils
+  </h1>
+  <p class="hero-sub">
+    Un SaaS interne pour centraliser le transit d'or entre agences, piloter les opérations en temps réel et unifier tous les outils de travail quotidien.
+  </p>
+  <div class="hero-meta">
+    <div class="hero-stat">
+      <span class="hero-stat-num">3+</span>
+      <span class="hero-stat-label">agences Lille</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">8</span>
+      <span class="hero-stat-label">modules identifiés</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">4</span>
+      <span class="hero-stat-label">phases de dev</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num">360°</span>
+      <span class="hero-stat-label">vision Pietro</span>
+    </div>
+  </div>
+  <div class="hero-scroll">scroll</div>
+</section>
+
+<!-- CONTEXT -->
+<section id="context">
+  <div class="container">
+    <p class="section-eyebrow">01 · Contexte</p>
+    <h2 class="section-title">Le problème <em>aujourd'hui</em></h2>
+    <p class="section-lead">
+      Pietro gère plusieurs agences d'achat-vente de métaux précieux sous franchise Godot & Fils. 
+      Les outils actuels sont fragmentés, sans traçabilité inter-agences et sans vision consolidée.
+    </p>
+
+    <div class="context-grid reveal">
+      <div class="ctx-card">
+        <div class="ctx-icon">🏪</div>
+        <p class="ctx-label">Réseau actuel</p>
+        <p class="ctx-title">Agences Lille Gambetta, Federbe & Grand Béta</p>
+        <p class="ctx-text">Chaque agence opère de manière totalement indépendante. Achats, ventes, stock — chacun gère son côté sans visibilité partagée sur les mouvements entre sites.</p>
+        <div class="ctx-tags">
+          <span class="tag">Gambetta</span>
+          <span class="tag">Federbe</span>
+          <span class="tag">Grand Béta</span>
+          <span class="tag neutral">+ Valenciennes (futur)</span>
+        </div>
+      </div>
+      <div class="ctx-card">
+        <div class="ctx-icon">💻</div>
+        <p class="ctx-label">Outils actuels</p>
+        <p class="ctx-title">Deux plateformes séparées, aucun tracking</p>
+        <p class="ctx-text">bo.achat-or-et-argent.fr pour le back-office et godotpro.fr pour les commandes Godot & Fils. Trop de mots de passe, aucun suivi des transferts physiques entre agences.</p>
+        <div class="ctx-tags">
+          <span class="tag neutral">bo.achat-or-et-argent.fr</span>
+          <span class="tag neutral">godotpro.fr</span>
+          <span class="tag neutral">Amazon (fournitures)</span>
+        </div>
+      </div>
+      <div class="ctx-card full">
+        <div class="ctx-icon">⚠️</div>
+        <p class="ctx-label">Pain points identifiés lors du RDV</p>
+        <p class="ctx-title">Ce qui manque aujourd'hui</p>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:16px">
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Aucune traçabilité transit</p>
+            <p class="ctx-text">Quand Gambetta envoie de la marchandise à Federbe, personne ne sait officiellement où elle est. Si le transporteur vole le colis — impossible de prouver quoi que ce soit.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Risque légal · Registre confié</p>
+            <p class="ctx-text">La marchandise reçue mais non enregistrée "n'existe pas" en cas de contrôle douanier. L'absence de registre confié expose les agences à des poursuites.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Zéro vision globale Pietro</p>
+            <p class="ctx-text">Pietro n'a aucun dashboard pour voir en temps réel ce qui est en transit, payé, arrivé. Il doit appeler chaque agence manuellement pour avoir l'état des opérations.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Dispersion des ressources</p>
+            <p class="ctx-text">Guides franchise, fournitures, photos produits, fournisseurs — chaque agence se débrouille séparément. Aucune mutualisation, perte de temps massive.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSIT -->
+<section id="transit">
+  <div class="container">
+    <p class="section-eyebrow">02 · Fonctionnalité core</p>
+    <h2 class="section-title">Le système de <em>transit</em></h2>
+    <p class="section-lead">
+      C'est la priorité absolue du projet. Traçabilité complète de A à Z pour chaque transfert de marchandise entre agences, avec numéro d'envoi unique, notifications automatiques et double validation paiement.
+    </p>
+
+    <div class="status-row reveal" style="margin-bottom:48px">
+      <span class="status-chip s-transit"><span class="dot"></span>En transit</span>
+      <span class="status-chip s-received"><span class="dot"></span>Réceptionné</span>
+      <span class="status-chip s-paid"><span class="dot"></span>Facturé + Payé</span>
+      <span class="status-chip s-pending"><span class="dot"></span>En attente de validation</span>
+    </div>
+
+    <div class="stepper-wrapper">
+      <div class="steps-list" id="stepsList">
+        <!-- injected by JS -->
+      </div>
+      <div class="step-panel" id="stepPanel">
+        <p class="panel-phase">EXEMPLE · 1 lingot 250g + 3 Napoléons</p>
+        <div class="panel-flow" id="panelFlow">
+          <!-- injected by JS -->
+        </div>
+        <div class="panel-note" id="panelNote">
+          Cliquez sur une étape pour voir les détails et l'état du flux.
+        </div>
+        <div class="panel-cta">
+          <button class="btn btn-primary" onclick="nextStep()">Étape suivante →</button>
+          <button class="btn btn-ghost" onclick="resetSteps()">↺</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Legal note -->
+    <div class="legal-box reveal" style="margin-top:60px">
+      <div class="legal-icon">⚖️</div>
+      <div>
+        <p class="legal-title">Obligation légale · Registre confié</p>
+        <p class="legal-text">
+          Chaque agence est légalement tenue de tenir un <strong style="color:var(--cream)">registre confié</strong>, équivalent d'un livre de police. Toute marchandise entrante doit être enregistrée. Sans ça, en cas de contrôle douanier, l'agence ne peut pas justifier la provenance des articles. Le système de transit remplit automatiquement cette obligation en créant une trace numérique horodatée à chaque mouvement. Le <strong style="color:var(--cream)">numéro d'envoi</strong> doit obligatoirement apparaître sur chaque facture associée — c'est le lien entre le flux physique et le flux comptable.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICATIONS -->
+<section id="notifs" style="padding-top:0;border-top:none">
+  <div class="container">
+    <p class="section-eyebrow">02b · Notifications</p>
+    <h2 class="section-title">Qui reçoit <em>quoi</em></h2>
+    <p class="section-lead">
+      Chaque action déclenche des notifications email + dashboard pour les parties concernées. Rien ne se perd, tout le monde est informé en temps réel.
+    </p>
+
+    <div class="notif-section reveal">
+      <div>
+        <p style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Événement → destinataires</p>
+        <div class="notif-flow">
+          <div class="notif-row">
+            <div class="notif-icon gold">📤</div>
+            <div class="notif-content">
+              <p class="notif-who">Bon créé par Gambetta</p>
+              <p class="notif-text">→ Federbe reçoit le bon de transfert pour validation</p>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-icon blue">✅</div>
+            <div class="notif-content">
+              <p class="notif-who">Federbe accepte</p>
+              <p class="notif-text">→ Gambetta + Pietro reçoivent la confirmation. Gambetta peut expédier.</p>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-icon gold">🚚</div>
+            <div class="notif-content">
+              <p class="notif-who">Marchandise expédiée</p>
+              <p class="notif-text">→ Federbe + Pietro notifiés. Statut → "En transit" sur tous les dashboards.</p>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-icon blue">📦</div>
+            <div class="notif-content">
+              <p class="notif-who">Réception confirmée par Federbe</p>
+              <p class="notif-text">→ Pietro + Gambetta notifiés. Statut → "Réceptionné".</p>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-icon green">💳</div>
+            <div class="notif-content">
+              <p class="notif-who">Federbe clique "Facturé + Payé"</p>
+              <p class="notif-text">→ Pietro + Gambetta notifiés. Virement en cours, statut → "Payé (non vérifié)".</p>
+            </div>
+          </div>
+          <div class="notif-row">
+            <div class="notif-icon green">🔒</div>
+            <div class="notif-content">
+              <p class="notif-who">Pietro valide le paiement reçu</p>
+              <p class="notif-text">→ Statut final → "Clôturé". Toutes les parties notifiées. Dossier archivé.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">Règles métier importantes</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:10px;padding:18px">
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">🔐 Validation obligatoire avant expédition</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">Gambetta ne peut physiquement pas "marquer comme envoyé" tant que Federbe n'a pas accepté le bon. Zéro envoi non autorisé.</p>
+          </div>
+          <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:10px;padding:18px">
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">🔢 Numéro d'envoi sur chaque facture</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">Auto-généré par le système. Doit figurer sur la facture Federbe. Permet de remonter de la comptabilité au mouvement physique et vice-versa.</p>
+          </div>
+          <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:10px;padding:18px">
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">✌️ Double validation du paiement</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">Federbe déclare avoir payé. Pietro vérifie sur le compte bancaire. Seulement alors le statut "Payé" est validé définitivement. Système en croix.</p>
+          </div>
+          <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:10px;padding:18px">
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">🏢 Transporteur trackable</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">Chaque bon renseigne l'organisme transporteur (Thémis, Elite, interne, Pietro…). En cas de problème, on sait immédiatement qui était responsable de la livraison.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="container">
+    <p class="section-eyebrow">03 · Architecture</p>
+    <h2 class="section-title">Vue <em>globale</em> du système</h2>
+    <p class="section-lead">
+      Chaque agence accède uniquement à son propre dashboard. Pietro dispose d'un accès super-admin avec vue consolidée sur l'ensemble du réseau.
+    </p>
+
+    <div class="arch-diagram reveal">
+      <div class="arch-tree">
+        <!-- Pietro super-admin -->
+        <div class="arch-row">
+          <div class="arch-node admin">
+            <p class="arch-node-label">Super-admin · Pietro</p>
+            <p class="arch-node-title">Vue 360° · Godot & Fils</p>
+            <p class="arch-node-sub">Tous les dashboards · Toutes les agences</p>
+          </div>
+        </div>
+        <div class="arch-trunk"></div>
+        <!-- Branches to agencies -->
+        <div class="arch-branches">
+          <div class="arch-branch">
+            <div class="arch-branch-line"></div>
+            <div class="arch-node agency">
+              <p class="arch-node-label">Agence</p>
+              <p class="arch-node-title">Gambetta</p>
+              <p class="arch-node-sub">Dashboard isolé</p>
+            </div>
+          </div>
+          <div class="arch-branch">
+            <div class="arch-branch-line"></div>
+            <div class="arch-node agency">
+              <p class="arch-node-label">Agence</p>
+              <p class="arch-node-title">Federbe</p>
+              <p class="arch-node-sub">Dashboard isolé</p>
+            </div>
+          </div>
+          <div class="arch-branch">
+            <div class="arch-branch-line"></div>
+            <div class="arch-node agency">
+              <p class="arch-node-label">Agence</p>
+              <p class="arch-node-title">Grand Béta</p>
+              <p class="arch-node-sub">Dashboard isolé</p>
+            </div>
+          </div>
+        </div>
+        <div class="arch-transit">
+          <span style="font-size:16px;opacity:.4">↔</span>
+          <span class="arch-transit-badge">Transit inter-agences</span>
+          <span style="font-size:12px;color:var(--muted)">Bons de transfert · Notifications · Statuts</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard content -->
+    <div style="margin-top:48px;display:grid;grid-template-columns:1fr 1fr;gap:24px" class="reveal">
+      <div>
+        <p style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px">Dashboard par agence</p>
+        <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:var(--radius-lg);padding:24px">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Transit actif</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Bons en cours, statuts en temps réel, actions disponibles</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Documents légaux</span><p style="font-size:12px;color:var(--muted);line-height:1.5">KBis, déclaration d'existence, pièce d'identité dirigeant</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Équipe & planning</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Responsable, employés, congés, planning</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Observations</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Notes opérationnelles (ex: réparation porte en attente)</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Guides & ressources</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Guides d'audit franchise, procédures internes</p></div></li>
+          </ul>
+        </div>
+      </div>
+      <div>
+        <p style="font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:16px">Dashboard Pietro · super-admin</p>
+        <div style="background:var(--dark2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px">
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Vue consolidée multi-agences</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Tout ce qui se passe sur toutes les agences simultanément</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Double validation paiement</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Pietro seul peut valider définitivement le statut "Payé" après vérification bancaire</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Historique complet</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Tous les transferts archivés avec numéros d'envoi et pièces jointes</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Gestion des utilisateurs</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Attribution des accès agences, droits par rôle</p></div></li>
+            <li style="display:flex;gap:10px;align-items:flex-start"><span style="color:var(--gold);margin-top:2px">›</span><div><span style="font-size:13px;font-weight:500;color:var(--cream)">Fil d'actualités curatées</span><p style="font-size:12px;color:var(--muted);line-height:1.5">Top actus or/géopolitique filtrées par IA, visible par toutes les agences</p></div></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODULES -->
+<section id="modules">
+  <div class="container">
+    <p class="section-eyebrow">04 · Modules</p>
+    <h2 class="section-title">Les <em>8 fonctionnalités</em> identifiées</h2>
+    <p class="section-lead">
+      Organisées en 3 phases de développement. La Phase 1 constitue le cœur irréductible du projet. Les Phases 2 et 3 s'y greffent progressivement.
+    </p>
+
+    <div class="modules-grid reveal">
+      <!-- Phase 1 -->
+      <div class="mod-card ph1 wide">
+        <p class="mod-phase">Phase 1 · Core — Priorité absolue</p>
+        <p class="mod-title">Système de transit inter-agences</p>
+        <p class="mod-desc">La raison d'être du projet. Un bon de transfert numérique avec numéro auto-généré, traçabilité de bout en bout, et notifications automatiques à chaque étape.</p>
+        <ul class="mod-features">
+          <li>Création de bons de transfert (descriptif libre, destinataire, transporteur)</li>
+          <li>Numéro d'envoi auto-généré · apparaît sur les factures associées</li>
+          <li>Statuts temps réel : en attente → validé → en transit → réceptionné → payé</li>
+          <li>Double validation paiement (Federbe déclare + Pietro vérifie bancaire)</li>
+          <li>Registre confié automatique · obligation légale remplie</li>
+          <li>Moyen de paiement renseigné (virement, carte, espèces)</li>
+        </ul>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase">Phase 1 · Core</p>
+        <p class="mod-title">Dashboard Pietro 360°</p>
+        <p class="mod-desc">Vue consolidée sur tout le réseau d'agences, en temps réel.</p>
+        <ul class="mod-features">
+          <li>Tous les transits actifs toutes agences confondues</li>
+          <li>Alertes paiements en attente de vérification</li>
+          <li>KPIs rapides par agence</li>
+          <li>Accès à chaque dashboard agence individuel</li>
+        </ul>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase">Phase 1 · Core</p>
+        <p class="mod-title">Dashboards agences isolés</p>
+        <p class="mod-desc">Un espace propre par agence, accessible uniquement avec ses identifiants.</p>
+        <ul class="mod-features">
+          <li>Documents légaux (KBis, déclaration, CNI dirigeant)</li>
+          <li>Responsable + liste employés</li>
+          <li>Planning & congés</li>
+          <li>Notes opérationnelles par agence</li>
+        </ul>
+      </div>
+      <!-- Phase 2 -->
+      <div class="mod-card ph2">
+        <p class="mod-phase">Phase 2</p>
+        <p class="mod-title">Bibliothèque de documents</p>
+        <p class="mod-desc">Guides d'audit franchise, procédures et ressources accessibles à tous les collaborateurs depuis un seul endroit.</p>
+        <ul class="mod-features">
+          <li>Guides d'audit franchise (vitrines, enseigne, LED…)</li>
+          <li>Téléchargement PDF depuis le dashboard</li>
+          <li>Upload par Pietro, visible par tous</li>
+        </ul>
+      </div>
+      <div class="mod-card ph2">
+        <p class="mod-phase">Phase 2</p>
+        <p class="mod-title">Banque de photos produits</p>
+        <p class="mod-desc">Photos mutualisées de tous les produits récurrents, organisées par thème et saisonnalité.</p>
+        <ul class="mod-features">
+          <li>Napoléons, lingots, pièces, collections</li>
+          <li>Thèmes saisonniers (Noël, printemps…)</li>
+          <li>Prêtes à l'emploi pour les réseaux sociaux</li>
+          <li>Alimentées par IA ou photographe Liam</li>
+        </ul>
+      </div>
+      <div class="mod-card ph2">
+        <p class="mod-phase">Phase 2</p>
+        <p class="mod-title">Achats centralisés</p>
+        <p class="mod-desc">Fini le mode sauvage sur Amazon. Toutes les fournitures récurrentes en un click depuis le dashboard.</p>
+        <ul class="mod-features">
+          <li>Liens directs produits (acides, pochons, sachets…)</li>
+          <li>Fournisseurs référencés par catégorie</li>
+          <li>Mutualisé pour toutes les agences</li>
+        </ul>
+      </div>
+      <!-- Phase 3 -->
+      <div class="mod-card ph3">
+        <p class="mod-phase">Phase 3 · IA</p>
+        <p class="mod-title">Fil d'actualités or</p>
+        <p class="mod-desc">Top actus géopolitiques et cours de l'or, curatées par IA depuis des sources validées par Pietro. 1-2 fois par semaine, pas de bruit.</p>
+        <ul class="mod-features">
+          <li>Sources définies par Pietro</li>
+          <li>Filtrage IA · seulement l'essentiel</li>
+          <li>Affiché en page d'accueil du dashboard</li>
+        </ul>
+      </div>
+      <div class="mod-card ph3">
+        <p class="mod-phase">Phase 3 · IA</p>
+        <p class="mod-title">IA intégrée</p>
+        <p class="mod-desc">Un assistant intelligent directement dans la plateforme, pour la génération d'images, l'aide utilisateur et la commande vocale.</p>
+        <ul class="mod-features">
+          <li>Chatbot d'aide (chaque bouton documenté)</li>
+          <li>Génération d'images produits (Gemini/Claude)</li>
+          <li>Commande vocale mobile (ex: "qu'est-ce qui est en transit ?")</li>
+          <li>Réponses vocales synthétisées</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPES -->
+<section id="principles" style="padding-bottom:60px">
+  <div class="container">
+    <p class="section-eyebrow">05 · Philosophie</p>
+    <h2 class="section-title">Principes <em>de développement</em></h2>
+    <p class="section-lead">Ce qu'on a aligné lors du RDV sur la manière dont ce projet va être mené.</p>
+
+    <div class="principles reveal">
+      <div class="princ-card">
+        <div class="princ-icon">🪜</div>
+        <p class="princ-title">Itération step by step</p>
+        <p class="princ-text">On valide chaque étape avant de continuer. Step 1 : transit. Pietro donne son aval sur le design et le flow avant qu'on passe à la suite. Pas de big bang.</p>
+      </div>
+      <div class="princ-card">
+        <div class="princ-icon">🏗️</div>
+        <p class="princ-title">Architecture modulaire et évolutive</p>
+        <p class="princ-text">Dès le départ, la base technique est conçue pour accueillir de nouveaux modules. Une nouvelle agence, une nouvelle fonctionnalité — ça s'ajoute sans tout reconstruire.</p>
+      </div>
+      <div class="princ-card">
+        <div class="princ-icon">⚡</div>
+        <p class="princ-title">Dynamisme vs logiciels figés</p>
+        <p class="princ-text">Les logiciels métier classiques coûtent 20-30k€ et sont gelés. Ici, une page change en quelques jours. Pas 6 mois. C'est un outil vivant, pas une application morte.</p>
+      </div>
+      <div class="princ-card">
+        <div class="princ-icon">🖥️</div>
+        <p class="princ-title">Desktop-first</p>
+        <p class="princ-text">Pietro travaille sur desktop. La plateforme est optimisée pour grand écran, mais accessible en version simplifiée sur mobile pour les consultations rapides.</p>
+      </div>
+      <div class="princ-card">
+        <div class="princ-icon">✍️</div>
+        <p class="princ-title">Saisie libre, pas de catalogue</p>
+        <p class="princ-text">Les descriptifs de marchandise sont en texte libre. Pas de catalogue de références à maintenir. Ça simplifie la saisie et évite une maintenance fastidieuse.</p>
+      </div>
+      <div class="princ-card">
+        <div class="princ-icon">🔔</div>
+        <p class="princ-title">Notifications mail + dashboard</p>
+        <p class="princ-text">Chaque action critique envoie un email ET génère une notification dashboard. Double canal = zéro excuse pour manquer une info importante.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section id="roadmap">
+  <div class="container">
+    <p class="section-eyebrow">06 · Roadmap</p>
+    <h2 class="section-title">Les 4 <em>phases</em> du projet</h2>
+    <p class="section-lead">
+      On valide le design et le flow de chaque phase avant d'entamer la suivante. La Phase 1 est le MVP qu'on livre en premier.
+    </p>
+
+    <div class="roadmap reveal">
+      <div class="rm-item">
+        <div class="rm-num">1</div>
+        <div class="rm-body">
+          <p class="rm-label" style="color:var(--gold)">Phase 1 · MVP</p>
+          <p class="rm-title">Système de transit + dashboards de base</p>
+          <div class="rm-items">
+            <span class="rm-chip">Bons de transfert</span>
+            <span class="rm-chip">Numéros auto-générés</span>
+            <span class="rm-chip">Statuts temps réel</span>
+            <span class="rm-chip">Registre confié</span>
+            <span class="rm-chip">Notifications mail</span>
+            <span class="rm-chip">Transporteur trackable</span>
+            <span class="rm-chip">Double validation paiement</span>
+            <span class="rm-chip">Dashboard Pietro 360°</span>
+            <span class="rm-chip">Dashboard agences (base)</span>
+          </div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-num">2</div>
+        <div class="rm-body">
+          <p class="rm-label" style="color:#7BBCE8">Phase 2 · Dashboards enrichis</p>
+          <p class="rm-title">Documents légaux · équipes · contenus mutualisés</p>
+          <div class="rm-items">
+            <span class="rm-chip">KBis & déclarations</span>
+            <span class="rm-chip">Responsables & employés</span>
+            <span class="rm-chip">Planning congés</span>
+            <span class="rm-chip">Observations agences</span>
+            <span class="rm-chip">Guides d'audit franchise</span>
+            <span class="rm-chip">Banque photos produits</span>
+            <span class="rm-chip">Achats centralisés</span>
+          </div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-num">3</div>
+        <div class="rm-body">
+          <p class="rm-label" style="color:#80C894">Phase 3 · IA & contenu</p>
+          <p class="rm-title">Fil d'actualités · chatbot · génération d'images</p>
+          <div class="rm-items">
+            <span class="rm-chip">Actus or curatées par IA</span>
+            <span class="rm-chip">Sources validées par Pietro</span>
+            <span class="rm-chip">Chatbot d'aide intégré</span>
+            <span class="rm-chip">Documentation interactive</span>
+            <span class="rm-chip">Génération d'images (Gemini/Claude)</span>
+            <span class="rm-chip">Photos saisonnières auto-générées</span>
+          </div>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-num">4</div>
+        <div class="rm-body">
+          <p class="rm-label" style="color:var(--muted)">Phase 4 · Automatisation avancée</p>
+          <p class="rm-title">Commande vocale · rapports auto · agents IA</p>
+          <div class="rm-items">
+            <span class="rm-chip">Commande vocale mobile</span>
+            <span class="rm-chip">Réponses vocales synthétisées</span>
+            <span class="rm-chip">Rapports mensuels automatisés</span>
+            <span class="rm-chip">Agents IA proactifs</span>
+            <span class="rm-chip">Posts réseaux sociaux auto</span>
+            <span class="rm-chip">Alertes géopolitiques intelligentes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEXT STEPS -->
+<section style="border-bottom:1px solid var(--border-dim)">
+  <div class="container">
+    <p class="section-eyebrow">07 · Suite</p>
+    <h2 class="section-title">Prochaines <em>étapes</em></h2>
+    <p class="section-lead">Ce qui a été convenu pour avancer concrètement.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px;border:1px solid var(--border-dim);border-radius:var(--radius-lg);overflow:hidden" class="reveal">
+      <div style="background:var(--dark2);padding:28px">
+        <p style="font-size:22px;margin-bottom:12px">📋</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:8px">Synthèse du RDV</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">Yanis envoie ce document complet à Pietro. Pietro valide : "ouais ça oui, ça non" → on fait un point phone ou présentiel.</p>
+      </div>
+      <div style="background:var(--dark2);padding:28px">
+        <p style="font-size:22px;margin-bottom:12px">💰</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:8px">Budgétisation</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">Pietro est conscient du temps de développement. On établit un devis phase par phase, validé avant de commencer chaque étape.</p>
+      </div>
+      <div style="background:var(--dark2);padding:28px">
+        <p style="font-size:22px;margin-bottom:12px">🎨</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:8px">Maquette Phase 1</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">Yanis produit une maquette du flux transit et du dashboard Gambetta. Pietro valide le design avant le développement.</p>
+      </div>
+      <div style="background:var(--dark2);padding:28px">
+        <p style="font-size:22px;margin-bottom:12px">🚀</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:8px">Développement MVP</p>
+        <p style="font-size:13px;color:var(--muted);line-height:1.6">Une fois la maquette validée, on attaque le développement du système de transit. Itérations rapides, feedback régulier de Pietro.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-brand">Godot & Fils · Plateforme Interne</span>
+  <div class="footer-meta">
+    <p>Compte-rendu · RDV Pietro × Yanis</p>
+    <p>18 mars 2026 · Agence Lille</p>
+    <p style="margin-top:4px;color:var(--gold);font-size:11px">Confidentiel · Usage interne</p>
+  </div>
+</footer>
+
+<script>
+const steps = [
+  { actor: 'S', label: 'Les deux', title: 'Accord téléphonique', detail: "Federbe contacte Gambetta par téléphone : \"T'as un lingot 250g + 3 Napoléons ?\". Si oui, accord verbal. Cette étape est volontairement hors système — pas besoin de la tracker." },
+  { actor: 'G', label: 'Gambetta', title: 'Création du bon de transfert', detail: "Gambetta remplit le formulaire : descriptif libre de la marchandise, sélection de l'agence destinataire dans la liste, choix du transporteur. Le numéro d'envoi est auto-généré." },
+  { actor: 'S', label: 'Système', title: 'Notification envoyée à Federbe', detail: "Federbe reçoit par mail ET sur son dashboard un bon de transfert détaillé : numéro d'envoi, descriptif exact, expéditeur, transporteur prévu." },
+  { actor: 'F', label: 'Federbe', title: 'Acceptation ou refus', detail: "Federbe clique 'Accepter' ou 'Refuser'. Un mail automatique confirme la décision à Gambetta et à Pietro. Gambetta ne peut pas expédier sans cette validation." },
+  { actor: 'G', label: 'Gambetta', title: 'Expédition de la marchandise', detail: "Seulement après validation, Gambetta remet la marchandise au transporteur et marque 'Expédié' dans la plateforme. Statut → En transit." },
+  { actor: 'S', label: 'Système', title: 'Notification transit actif', detail: "Pietro et Gambetta sont notifiés. Tous les dashboards concernés affichent le statut 'En transit' avec le numéro d'envoi, le transporteur et la description." },
+  { actor: 'F', label: 'Federbe', title: 'Réception de la marchandise', detail: "À l'arrivée, Federbe clique 'Réceptionner'. Pietro et Gambetta reçoivent immédiatement une notification. L'agence peut ne pas traiter tout de suite si affluence." },
+  { actor: 'F', label: 'Federbe', title: 'Facturation + paiement', detail: "Federbe clique 'Facturé + Payé' et effectue le virement. Le numéro d'envoi doit figurer sur la facture émise. Facturer = payer immédiatement, ce sont deux actions liées." },
+  { actor: 'P', label: 'Pietro', title: 'Vérification et validation finale', detail: "Pietro vérifie sur le compte bancaire que le virement a effectivement été reçu. Seulement alors il valide le statut 'Payé' définitivement. Système en croix, zéro erreur." }
+];
+
+const flowNodes = [
+  'Accord téléphonique',
+  'Bon de transfert créé',
+  'Validation Federbe',
+  'En transit',
+  'Réceptionné',
+  'Facturé + Payé',
+  'Validé par Pietro'
+];
+
+const panelNotes = [
+  "Hors système. Accord oral uniquement.",
+  "Numéro d'envoi auto-généré dès la création.",
+  "Gambetta ne peut pas expédier sans cette étape.",
+  "Statut visible en temps réel sur tous les dashboards.",
+  "Federbe peut réceptionner avant de traiter si affluence.",
+  "Numéro d'envoi obligatoire sur la facture.",
+  "Double validation paiement : protection totale contre les erreurs."
+];
+
+let cur = -1;
+
+function buildSteps() {
+  const list = document.getElementById('stepsList');
+  list.innerHTML = steps.map((s, i) => `
+    <div class="step fut" id="step${i}" onclick="goStep(${i})">
+      <div class="step-num">${i + 1}</div>
+      <div class="step-body">
+        <span class="step-actor actor-${s.actor}">${s.label}</span>
+        <p class="step-title">${s.title}</p>
+        <p class="step-detail">${s.detail}</p>
+      </div>
+    </div>
+  `).join('');
+  buildPanel(-1);
+}
+
+function buildPanel(active) {
+  const flow = document.getElementById('panelFlow');
+  flow.innerHTML = flowNodes.map((n, i) => {
+    let cls = '';
+    if (active === -1) cls = '';
+    else if (i === Math.min(active, flowNodes.length - 1)) cls = 'highlighted';
+    else if (i < Math.min(active, flowNodes.length - 1)) cls = 'done-node';
+    const html = `<div class="flow-node ${cls}">${n}</div>`;
+    if (i < flowNodes.length - 1) return html + '<div class="flow-arrow">↓</div>';
+    return html;
+  }).join('');
+
+  document.getElementById('panelNote').textContent =
+    active >= 0 ? panelNotes[active] : 'Cliquez sur une étape pour voir les détails du flux.';
+}
+
+function goStep(idx) {
+  for (let i = 0; i < steps.length; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active', 'done', 'fut');
+    if (i < idx) el.classList.add('done');
+    else if (i === idx) el.classList.add('active');
+    else el.classList.add('fut');
+  }
+  cur = idx;
+  const flowIdx = Math.floor((idx / (steps.length - 1)) * (flowNodes.length - 1));
+  buildPanel(flowIdx);
+  document.getElementById('bnxt').textContent = cur === steps.length - 1 ? 'Terminé ✓' : 'Étape suivante →';
+}
+
+function nextStep() {
+  if (cur < steps.length - 1) goStep(cur + 1);
+}
+
+function resetSteps() {
+  cur = -1;
+  document.querySelectorAll('.step').forEach(el => {
+    el.classList.remove('active', 'done');
+    el.classList.add('fut');
+  });
+  buildPanel(-1);
+  document.getElementById('bnxt').textContent = 'Étape suivante →';
+}
+
+// Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+buildSteps();
+</script>
+</body>
+</html>
