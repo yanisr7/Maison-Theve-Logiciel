@@ -3,6 +3,16 @@ import type {
   AgencySlug,
   Appointment,
   AppointmentStatus,
+  DocumentCategory,
+  DocumentStatus,
+  Employee,
+  EmployeeRole,
+  Leave,
+  LeaveType,
+  LegalDocument,
+  Observation,
+  ObservationPriority,
+  ObservationStatus,
   Pickup,
   PickupStatus,
   Review,
@@ -205,35 +215,8 @@ export function updateTransit(id: string, fn: (t: Transit) => Transit): Transit 
   return updated;
 }
 
-// Observations / équipe — stubs simples par agence
-export const OBSERVATIONS: Record<AgencySlug, { date: string; author: string; text: string }[]> = {
-  gambetta: [
-    { date: "2026-05-19", author: "Sébastien", text: "Client revenu pour les Napoléons — accord conclu à 295€/pièce." },
-    { date: "2026-05-15", author: "Sébastien", text: "Vitrine 2 cassée, devis vitrier envoyé à Pietro." },
-  ],
-  federbe: [
-    { date: "2026-05-18", author: "Karim", text: "Demande de mise en sécu coffre — réceptionné Thémis OK." },
-  ],
-  "grand-beta": [
-    { date: "2026-05-16", author: "Audrey", text: "Ouverture exceptionnelle samedi 23/05, prévenir équipe." },
-  ],
-};
-
-export const TEAM: Record<AgencySlug, { name: string; role: string }[]> = {
-  gambetta: [
-    { name: "Sébastien", role: "Responsable" },
-    { name: "Léa", role: "Vendeuse" },
-    { name: "Marc", role: "Apprenti" },
-  ],
-  federbe: [
-    { name: "Karim", role: "Responsable" },
-    { name: "Sofia", role: "Vendeuse" },
-  ],
-  "grand-beta": [
-    { name: "Audrey", role: "Responsable" },
-    { name: "Tom", role: "Vendeur" },
-  ],
-};
+// (Anciennes données équipe/observations stub remplacées par les modules
+// dédiés DOCUMENTS / EMPLOYEES / LEAVES / OBSERVATIONS plus bas.)
 
 // ============================================================
 // Point Relais Paris → Lille
@@ -599,4 +582,612 @@ export function addReview(input: Omit<Review, "id" | "createdAt">): Review {
   };
   REVIEWS = [r, ...REVIEWS];
   return r;
+}
+
+// ============================================================
+// Documents légaux par agence
+// ============================================================
+
+export const DOCUMENT_STATUS_LABEL: Record<DocumentStatus, string> = {
+  up_to_date: "À jour",
+  expiring_soon: "Expire bientôt",
+  expired: "Expiré",
+  missing: "Manquant",
+};
+
+export const DOCUMENT_CATEGORY_LABEL: Record<DocumentCategory, string> = {
+  kbis: "KBis",
+  declaration: "Déclaration",
+  id: "Pièce d'identité",
+  other: "Autre",
+};
+
+const initialDocuments: LegalDocument[] = [
+  // Gambetta — KBis à jour, Déclaration expire bientôt, CNI à jour, registre manquant
+  {
+    id: "doc1",
+    agencyId: "gambetta",
+    name: "KBis",
+    category: "kbis",
+    fileName: "kbis-gambetta-2026.pdf",
+    uploadedAt: isoOffsetDays(-45, 9, 0),
+    expiresAt: isoOffsetDays(120, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc2",
+    agencyId: "gambetta",
+    name: "Déclaration d'existence",
+    category: "declaration",
+    fileName: "declaration-gambetta-2024.pdf",
+    uploadedAt: isoOffsetDays(-380, 11, 0),
+    expiresAt: isoOffsetDays(18, 0, 0),
+    status: "expiring_soon",
+  },
+  {
+    id: "doc3",
+    agencyId: "gambetta",
+    name: "CNI dirigeant (Sébastien)",
+    category: "id",
+    fileName: "cni-sebastien.pdf",
+    uploadedAt: isoOffsetDays(-200, 14, 30),
+    expiresAt: isoOffsetDays(900, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc4",
+    agencyId: "gambetta",
+    name: "Attestation assurance locaux",
+    category: "other",
+    status: "missing",
+  },
+  // Federbe — KBis expiré, Déclaration à jour, CNI à jour
+  {
+    id: "doc5",
+    agencyId: "federbe",
+    name: "KBis",
+    category: "kbis",
+    fileName: "kbis-federbe-2024.pdf",
+    uploadedAt: isoOffsetDays(-410, 10, 0),
+    expiresAt: isoOffsetDays(-12, 0, 0),
+    status: "expired",
+  },
+  {
+    id: "doc6",
+    agencyId: "federbe",
+    name: "Déclaration d'existence",
+    category: "declaration",
+    fileName: "declaration-federbe-2026.pdf",
+    uploadedAt: isoOffsetDays(-30, 9, 30),
+    expiresAt: isoOffsetDays(335, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc7",
+    agencyId: "federbe",
+    name: "CNI dirigeant (Karim)",
+    category: "id",
+    fileName: "cni-karim.pdf",
+    uploadedAt: isoOffsetDays(-150, 11, 0),
+    expiresAt: isoOffsetDays(1200, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc8",
+    agencyId: "federbe",
+    name: "Registre du commerce (extrait)",
+    category: "other",
+    fileName: "rcs-federbe.pdf",
+    uploadedAt: isoOffsetDays(-90, 16, 0),
+    status: "up_to_date",
+  },
+  // Grand Béta — KBis à jour, Déclaration manquante, CNI expire bientôt
+  {
+    id: "doc9",
+    agencyId: "grand-beta",
+    name: "KBis",
+    category: "kbis",
+    fileName: "kbis-grand-beta-2026.pdf",
+    uploadedAt: isoOffsetDays(-60, 9, 0),
+    expiresAt: isoOffsetDays(100, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc10",
+    agencyId: "grand-beta",
+    name: "Déclaration d'existence",
+    category: "declaration",
+    status: "missing",
+  },
+  {
+    id: "doc11",
+    agencyId: "grand-beta",
+    name: "CNI dirigeant (Audrey)",
+    category: "id",
+    fileName: "cni-audrey.pdf",
+    uploadedAt: isoOffsetDays(-1800, 14, 0),
+    expiresAt: isoOffsetDays(25, 0, 0),
+    status: "expiring_soon",
+  },
+  {
+    id: "doc12",
+    agencyId: "grand-beta",
+    name: "Bail commercial",
+    category: "other",
+    fileName: "bail-grand-beta.pdf",
+    uploadedAt: isoOffsetDays(-720, 10, 0),
+    expiresAt: isoOffsetDays(1500, 0, 0),
+    status: "up_to_date",
+  },
+];
+
+let DOCUMENTS: LegalDocument[] = [...initialDocuments];
+
+export function getAllDocuments(): LegalDocument[] {
+  return DOCUMENTS;
+}
+
+export function getDocumentsByAgency(agencyId: AgencySlug): LegalDocument[] {
+  return DOCUMENTS.filter((d) => d.agencyId === agencyId);
+}
+
+export function getDocument(id: string): LegalDocument | undefined {
+  return DOCUMENTS.find((d) => d.id === id);
+}
+
+export function getExpiringDocuments(): LegalDocument[] {
+  return DOCUMENTS.filter((d) => d.status !== "up_to_date");
+}
+
+export function addDocument(
+  input: Omit<LegalDocument, "id">
+): LegalDocument {
+  const id = "doc" + (DOCUMENTS.length + 1) + "-" + Date.now();
+  const doc: LegalDocument = { ...input, id };
+  DOCUMENTS = [doc, ...DOCUMENTS];
+  return doc;
+}
+
+export function replaceDocument(
+  id: string,
+  input: { fileName: string; uploadedAt?: string; expiresAt?: string }
+): LegalDocument | undefined {
+  const idx = DOCUMENTS.findIndex((d) => d.id === id);
+  if (idx === -1) return undefined;
+  const now = new Date().toISOString();
+  // statut recalculé : si expiresAt fourni et < 30j → expiring_soon, sinon up_to_date
+  let status: DocumentStatus = "up_to_date";
+  if (input.expiresAt) {
+    const ms = new Date(input.expiresAt).getTime() - Date.now();
+    const days = ms / (1000 * 60 * 60 * 24);
+    if (days < 0) status = "expired";
+    else if (days < 30) status = "expiring_soon";
+  }
+  const updated: LegalDocument = {
+    ...DOCUMENTS[idx],
+    fileName: input.fileName,
+    uploadedAt: input.uploadedAt ?? now,
+    expiresAt: input.expiresAt ?? DOCUMENTS[idx].expiresAt,
+    status,
+  };
+  DOCUMENTS = [...DOCUMENTS.slice(0, idx), updated, ...DOCUMENTS.slice(idx + 1)];
+  return updated;
+}
+
+// ============================================================
+// Équipe & planning
+// ============================================================
+
+export const EMPLOYEE_ROLE_LABEL: Record<EmployeeRole, string> = {
+  responsable: "Responsable",
+  cambiste: "Cambiste",
+  apprenti: "Apprenti",
+  stagiaire: "Stagiaire",
+};
+
+export const LEAVE_TYPE_LABEL: Record<LeaveType, string> = {
+  paid: "Congés payés",
+  unpaid: "Sans solde",
+  sick: "Arrêt maladie",
+  training: "Formation",
+};
+
+const initialEmployees: Employee[] = [
+  // Gambetta — 1 responsable, 2 cambistes, 1 apprenti
+  {
+    id: "emp1",
+    agencyId: "gambetta",
+    firstName: "Sébastien",
+    lastName: "Dubois",
+    email: "sebastien.dubois@godot-fils.fr",
+    phone: "06 11 22 33 44",
+    role: "responsable",
+    startedAt: "2019-03-15",
+  },
+  {
+    id: "emp2",
+    agencyId: "gambetta",
+    firstName: "Léa",
+    lastName: "Martin",
+    email: "lea.martin@godot-fils.fr",
+    phone: "06 22 33 44 55",
+    role: "cambiste",
+    startedAt: "2022-09-01",
+  },
+  {
+    id: "emp3",
+    agencyId: "gambetta",
+    firstName: "Marc",
+    lastName: "Lefèvre",
+    email: "marc.lefevre@godot-fils.fr",
+    phone: "07 33 44 55 66",
+    role: "apprenti",
+    startedAt: "2025-09-01",
+  },
+  // Federbe — 1 responsable, 2 cambistes
+  {
+    id: "emp4",
+    agencyId: "federbe",
+    firstName: "Karim",
+    lastName: "Benali",
+    email: "karim.benali@godot-fils.fr",
+    phone: "06 44 55 66 77",
+    role: "responsable",
+    startedAt: "2020-06-01",
+  },
+  {
+    id: "emp5",
+    agencyId: "federbe",
+    firstName: "Sofia",
+    lastName: "Garcia",
+    email: "sofia.garcia@godot-fils.fr",
+    phone: "06 55 66 77 88",
+    role: "cambiste",
+    startedAt: "2023-02-15",
+  },
+  {
+    id: "emp6",
+    agencyId: "federbe",
+    firstName: "Théo",
+    lastName: "Renard",
+    email: "theo.renard@godot-fils.fr",
+    phone: "07 66 77 88 99",
+    role: "cambiste",
+    startedAt: "2024-04-08",
+  },
+  // Grand Béta — 1 responsable, 2 cambistes, 1 stagiaire
+  {
+    id: "emp7",
+    agencyId: "grand-beta",
+    firstName: "Audrey",
+    lastName: "Vasseur",
+    email: "audrey.vasseur@godot-fils.fr",
+    phone: "06 77 88 99 00",
+    role: "responsable",
+    startedAt: "2018-11-12",
+  },
+  {
+    id: "emp8",
+    agencyId: "grand-beta",
+    firstName: "Tom",
+    lastName: "Carpentier",
+    email: "tom.carpentier@godot-fils.fr",
+    phone: "06 88 99 00 11",
+    role: "cambiste",
+    startedAt: "2021-07-20",
+  },
+  {
+    id: "emp9",
+    agencyId: "grand-beta",
+    firstName: "Margaux",
+    lastName: "Petit",
+    email: "margaux.petit@godot-fils.fr",
+    phone: "07 99 00 11 22",
+    role: "cambiste",
+    startedAt: "2023-10-03",
+  },
+  {
+    id: "emp10",
+    agencyId: "grand-beta",
+    firstName: "Hugo",
+    lastName: "Bernard",
+    email: "hugo.bernard@godot-fils.fr",
+    phone: "06 10 20 30 40",
+    role: "stagiaire",
+    startedAt: "2026-04-01",
+  },
+];
+
+let EMPLOYEES: Employee[] = [...initialEmployees];
+
+export function getAllEmployees(): Employee[] {
+  return EMPLOYEES;
+}
+
+export function getEmployeesByAgency(agencyId: AgencySlug): Employee[] {
+  return EMPLOYEES.filter((e) => e.agencyId === agencyId);
+}
+
+export function getEmployee(id: string): Employee | undefined {
+  return EMPLOYEES.find((e) => e.id === id);
+}
+
+// Congés — datés autour de NOW (2026-05-21)
+const initialLeaves: Leave[] = [
+  {
+    id: "lv1",
+    employeeId: "emp2",
+    agencyId: "gambetta",
+    type: "paid",
+    startsAt: isoOffsetDays(-1, 0, 0),
+    endsAt: isoOffsetDays(3, 0, 0),
+    reason: "Congés famille",
+  },
+  {
+    id: "lv2",
+    employeeId: "emp5",
+    agencyId: "federbe",
+    type: "sick",
+    startsAt: isoOffsetDays(0, 0, 0),
+    endsAt: isoOffsetDays(2, 0, 0),
+  },
+  {
+    id: "lv3",
+    employeeId: "emp8",
+    agencyId: "grand-beta",
+    type: "training",
+    startsAt: isoOffsetDays(5, 0, 0),
+    endsAt: isoOffsetDays(6, 0, 0),
+    reason: "Formation lutte anti-blanchiment",
+  },
+  {
+    id: "lv4",
+    employeeId: "emp3",
+    agencyId: "gambetta",
+    type: "paid",
+    startsAt: isoOffsetDays(8, 0, 0),
+    endsAt: isoOffsetDays(12, 0, 0),
+  },
+  {
+    id: "lv5",
+    employeeId: "emp6",
+    agencyId: "federbe",
+    type: "unpaid",
+    startsAt: isoOffsetDays(-10, 0, 0),
+    endsAt: isoOffsetDays(-8, 0, 0),
+    reason: "Déménagement",
+  },
+  {
+    id: "lv6",
+    employeeId: "emp9",
+    agencyId: "grand-beta",
+    type: "paid",
+    startsAt: isoOffsetDays(10, 0, 0),
+    endsAt: isoOffsetDays(14, 0, 0),
+  },
+];
+
+let LEAVES: Leave[] = [...initialLeaves];
+
+export function getAllLeaves(): Leave[] {
+  return LEAVES;
+}
+
+export function getLeavesByAgency(agencyId: AgencySlug): Leave[] {
+  return LEAVES.filter((l) => l.agencyId === agencyId);
+}
+
+export function getCurrentLeavesByAgency(agencyId: AgencySlug): Leave[] {
+  const now = Date.now();
+  return LEAVES.filter(
+    (l) =>
+      l.agencyId === agencyId &&
+      new Date(l.startsAt).getTime() <= now &&
+      new Date(l.endsAt).getTime() >= now
+  );
+}
+
+export function getCurrentLeavesNetworkWide(): Leave[] {
+  const now = Date.now();
+  return LEAVES.filter(
+    (l) =>
+      new Date(l.startsAt).getTime() <= now &&
+      new Date(l.endsAt).getTime() >= now
+  );
+}
+
+export function getUpcomingLeavesByAgency(
+  agencyId: AgencySlug,
+  daysAhead = 14
+): Leave[] {
+  const now = Date.now();
+  const horizon = now + daysAhead * 24 * 60 * 60 * 1000;
+  return LEAVES.filter((l) => {
+    if (l.agencyId !== agencyId) return false;
+    const start = new Date(l.startsAt).getTime();
+    const end = new Date(l.endsAt).getTime();
+    // Tout congé qui chevauche l'intervalle [now, horizon]
+    return end >= now && start <= horizon;
+  }).sort(
+    (a, b) =>
+      new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+  );
+}
+
+// ============================================================
+// Observations agences
+// ============================================================
+
+export const OBSERVATION_STATUS_LABEL: Record<ObservationStatus, string> = {
+  open: "Ouverte",
+  resolved: "Résolue",
+};
+
+export const OBSERVATION_PRIORITY_LABEL: Record<ObservationPriority, string> = {
+  low: "Basse",
+  normal: "Normale",
+  high: "Haute",
+};
+
+const initialObservations: Observation[] = [
+  // Gambetta
+  {
+    id: "obs1",
+    agencyId: "gambetta",
+    text: "Réparation porte d'entrée en attente — devis serrurier transmis à Pietro le 12/05.",
+    authorName: "Sébastien",
+    createdAt: isoOffsetDays(-2, 9, 0),
+    status: "open",
+    priority: "high",
+  },
+  {
+    id: "obs2",
+    agencyId: "gambetta",
+    text: "Stock pochons sécurisés à recommander (reste 12 unités).",
+    authorName: "Léa",
+    createdAt: isoOffsetDays(-4, 14, 30),
+    status: "open",
+    priority: "normal",
+  },
+  {
+    id: "obs3",
+    agencyId: "gambetta",
+    text: "Nettoyage hebdomadaire OK — vitrines impeccables.",
+    authorName: "Marc",
+    createdAt: isoOffsetDays(-6, 18, 0),
+    resolvedAt: isoOffsetDays(-6, 18, 5),
+    status: "resolved",
+    priority: "low",
+  },
+  // Federbe
+  {
+    id: "obs4",
+    agencyId: "federbe",
+    text: "Vitrine LED côté gauche défectueuse — clignote par intermittence.",
+    authorName: "Karim",
+    createdAt: isoOffsetDays(-1, 11, 0),
+    status: "open",
+    priority: "high",
+  },
+  {
+    id: "obs5",
+    agencyId: "federbe",
+    text: "Tapis d'accueil très usé, à remplacer avant fin du mois.",
+    authorName: "Sofia",
+    createdAt: isoOffsetDays(-3, 16, 0),
+    status: "open",
+    priority: "normal",
+  },
+  {
+    id: "obs6",
+    agencyId: "federbe",
+    text: "Alarme testée par Thémis — RAS.",
+    authorName: "Karim",
+    createdAt: isoOffsetDays(-10, 9, 30),
+    resolvedAt: isoOffsetDays(-9, 10, 0),
+    status: "resolved",
+    priority: "low",
+  },
+  // Grand Béta
+  {
+    id: "obs7",
+    agencyId: "grand-beta",
+    text: "Imprimante caisse à bout de souffle — remplacement urgent recommandé.",
+    authorName: "Audrey",
+    createdAt: isoOffsetDays(-1, 15, 0),
+    status: "open",
+    priority: "high",
+  },
+  {
+    id: "obs8",
+    agencyId: "grand-beta",
+    text: "Demander à Hugo (stagiaire) un retour écrit fin de stage.",
+    authorName: "Audrey",
+    createdAt: isoOffsetDays(-5, 17, 0),
+    status: "open",
+    priority: "low",
+  },
+  {
+    id: "obs9",
+    agencyId: "grand-beta",
+    text: "Coffre vérifié — combinaison changée comme prévu.",
+    authorName: "Tom",
+    createdAt: isoOffsetDays(-8, 10, 0),
+    resolvedAt: isoOffsetDays(-8, 11, 0),
+    status: "resolved",
+    priority: "normal",
+  },
+];
+
+let OBSERVATIONS_LIST: Observation[] = [...initialObservations];
+
+export function getAllObservations(): Observation[] {
+  return OBSERVATIONS_LIST;
+}
+
+export function getObservationsByAgency(agencyId: AgencySlug): Observation[] {
+  return OBSERVATIONS_LIST.filter((o) => o.agencyId === agencyId);
+}
+
+export function getOpenObservationsByAgency(
+  agencyId: AgencySlug
+): Observation[] {
+  return OBSERVATIONS_LIST.filter(
+    (o) => o.agencyId === agencyId && o.status === "open"
+  );
+}
+
+const PRIORITY_RANK: Record<ObservationPriority, number> = {
+  low: 0,
+  normal: 1,
+  high: 2,
+};
+
+export function getAllOpenObservations(
+  priorityMin?: ObservationPriority
+): Observation[] {
+  const min = priorityMin ? PRIORITY_RANK[priorityMin] : 0;
+  return OBSERVATIONS_LIST.filter(
+    (o) => o.status === "open" && PRIORITY_RANK[o.priority] >= min
+  ).sort(
+    (a, b) =>
+      PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority] ||
+      (a.createdAt < b.createdAt ? 1 : -1)
+  );
+}
+
+export function addObservation(
+  agencyId: AgencySlug,
+  text: string,
+  authorName: string,
+  priority: ObservationPriority
+): string {
+  const id = "obs" + (OBSERVATIONS_LIST.length + 1) + "-" + Date.now();
+  const obs: Observation = {
+    id,
+    agencyId,
+    text,
+    authorName,
+    createdAt: new Date().toISOString(),
+    status: "open",
+    priority,
+  };
+  OBSERVATIONS_LIST = [obs, ...OBSERVATIONS_LIST];
+  return id;
+}
+
+export function resolveObservation(id: string): Observation | undefined {
+  const idx = OBSERVATIONS_LIST.findIndex((o) => o.id === id);
+  if (idx === -1) return undefined;
+  const updated: Observation = {
+    ...OBSERVATIONS_LIST[idx],
+    status: "resolved",
+    resolvedAt: new Date().toISOString(),
+  };
+  OBSERVATIONS_LIST = [
+    ...OBSERVATIONS_LIST.slice(0, idx),
+    updated,
+    ...OBSERVATIONS_LIST.slice(idx + 1),
+  ];
+  return updated;
 }

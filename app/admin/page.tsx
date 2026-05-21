@@ -10,6 +10,11 @@ import {
   getAllPickups,
   getAllAppointments,
   getAllReviews,
+  getExpiringDocuments,
+  getAllOpenObservations,
+  getCurrentLeavesNetworkWide,
+  getEmployee,
+  LEAVE_TYPE_LABEL,
 } from "@/lib/mock";
 import { TransitCard } from "@/components/TransitCard";
 import { useRole } from "@/lib/role-context";
@@ -17,6 +22,10 @@ import type { AgencySlug, TransitStatus } from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
 import { ReviewCard } from "@/components/ReviewCard";
 import { PickupStatusChip } from "@/components/PickupStatusChip";
+import { DocumentStatusChip } from "@/components/DocumentStatusChip";
+import {
+  ObservationPriorityChip,
+} from "@/components/ObservationChips";
 import {
   Card,
   CardContent,
@@ -27,8 +36,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, ArrowRight, ExternalLink, Package, CalendarClock } from "lucide-react";
-import { cn, formatDateTime } from "@/lib/utils";
+import {
+  AlertCircle,
+  AlertTriangle,
+  ArrowRight,
+  CalendarClock,
+  CalendarRange,
+  ExternalLink,
+  FileText,
+  Package,
+} from "lucide-react";
+import { cn, formatDate, formatDateTime, relativeDate } from "@/lib/utils";
 
 const ALL_STATUSES: TransitStatus[] = [
   "pending",
@@ -426,6 +444,222 @@ export default function AdminPage() {
           </div>
         )}
       </section>
+
+      <Separator />
+
+      {/* === Documents à surveiller (réseau) === */}
+      <NetworkDocumentsSection />
+
+      {/* === Observations critiques (réseau) === */}
+      <NetworkCriticalObservationsSection />
+
+      {/* === Absences en cours (réseau) === */}
+      <NetworkCurrentLeavesSection />
     </div>
+  );
+}
+
+function NetworkDocumentsSection() {
+  const docs = getExpiringDocuments();
+  const sorted = [...docs].sort((a, b) => {
+    // priorité : expired > missing > expiring_soon
+    const rank: Record<string, number> = {
+      expired: 0,
+      missing: 1,
+      expiring_soon: 2,
+      up_to_date: 3,
+    };
+    const ra = rank[a.status];
+    const rb = rank[b.status];
+    if (ra !== rb) return ra - rb;
+    return a.name.localeCompare(b.name);
+  });
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <FileText className="size-5 text-[var(--gold)]" aria-hidden />
+          Documents à surveiller — réseau
+        </h2>
+        <Badge variant="outline">{sorted.length}</Badge>
+      </div>
+      {sorted.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+          Tous les documents sont à jour.
+        </div>
+      ) : (
+        <ul className="divide-y divide-border rounded-xl border border-border bg-card">
+          {sorted.map((d) => {
+            const agency = agencyBySlug(d.agencyId);
+            return (
+              <li
+                key={d.id}
+                className="flex flex-wrap items-center justify-between gap-3 p-4 text-sm"
+              >
+                <div>
+                  <p className="font-medium text-foreground">{d.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {agency.name}
+                    {d.expiresAt && (
+                      <> · expire le {formatDate(d.expiresAt)}</>
+                    )}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <DocumentStatusChip status={d.status} />
+                  <Button asChild size="sm" variant="outline">
+                    <Link href={`/agence/${d.agencyId}/documents`}>
+                      Ouvrir <ArrowRight className="size-3" />
+                    </Link>
+                  </Button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function NetworkCriticalObservationsSection() {
+  const critical = getAllOpenObservations("high");
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <AlertTriangle className="size-5 text-red-600" aria-hidden />
+          Observations critiques — réseau
+        </h2>
+        <Badge variant="outline">{critical.length}</Badge>
+      </div>
+      {critical.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+          Aucune observation critique ouverte.
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2">
+          {critical.map((o) => {
+            const agency = agencyBySlug(o.agencyId);
+            return (
+              <Card key={o.id} className="border-red-200">
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge className="bg-red-600 text-white">
+                      {agency.name}
+                    </Badge>
+                    <ObservationPriorityChip priority={o.priority} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {relativeDate(o.createdAt)}
+                  </span>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p className="text-foreground whitespace-pre-line">
+                    {o.text}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Par{" "}
+                    <span className="font-medium text-foreground">
+                      {o.authorName}
+                    </span>
+                  </p>
+                  <Link
+                    href={`/agence/${o.agencyId}/observations`}
+                    className="inline-flex items-center gap-1 text-xs font-medium text-[var(--gold)] hover:underline"
+                  >
+                    Voir sur {agency.name} <ArrowRight className="size-3" />
+                  </Link>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+function NetworkCurrentLeavesSection() {
+  const leaves = getCurrentLeavesNetworkWide();
+  const grouped: Record<AgencySlug, typeof leaves> = {
+    gambetta: [],
+    federbe: [],
+    "grand-beta": [],
+  };
+  for (const l of leaves) grouped[l.agencyId].push(l);
+
+  return (
+    <section>
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <CalendarRange className="size-5 text-[var(--gold)]" aria-hidden />
+          Absences en cours — réseau
+        </h2>
+        <Badge variant="outline">{leaves.length}</Badge>
+      </div>
+      <div className="grid gap-4 md:grid-cols-3">
+        {AGENCIES.map((a) => {
+          const ls = grouped[a.slug];
+          return (
+            <Card key={a.slug} className="gap-2 py-5">
+              <CardHeader className="flex flex-row items-start justify-between gap-3">
+                <div>
+                  <p className="font-serif text-xl text-foreground">
+                    {a.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-[var(--gold)]">
+                      {ls.length}
+                    </span>{" "}
+                    absent{ls.length > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <Button asChild size="sm" variant="outline">
+                  <Link href={`/agence/${a.slug}/equipe`}>
+                    Équipe <ArrowRight className="size-3" />
+                  </Link>
+                </Button>
+              </CardHeader>
+              <CardContent>
+                {ls.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Personne d'absent aujourd'hui.
+                  </p>
+                ) : (
+                  <ul className="space-y-2 text-sm">
+                    {ls.map((l) => {
+                      const emp = getEmployee(l.employeeId);
+                      return (
+                        <li
+                          key={l.id}
+                          className="rounded-md border border-border bg-muted/20 p-2"
+                        >
+                          <p className="text-foreground">
+                            {emp
+                              ? `${emp.firstName} ${emp.lastName}`
+                              : "Employé inconnu"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {LEAVE_TYPE_LABEL[l.type]} · retour{" "}
+                            {formatDate(
+                              new Date(
+                                new Date(l.endsAt).getTime() +
+                                  24 * 60 * 60 * 1000
+                              )
+                            )}
+                          </p>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+    </section>
   );
 }

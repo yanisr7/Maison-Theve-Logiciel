@@ -5,29 +5,39 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   AGENCIES,
-  OBSERVATIONS,
-  TEAM,
   agencyBySlug,
   getAllTransits,
   getAllPickups,
   getAllAppointments,
   getAllReviews,
+  getDocumentsByAgency,
+  getEmployeesByAgency,
+  getCurrentLeavesByAgency,
+  getObservationsByAgency,
 } from "@/lib/mock";
 import { TransitCard } from "@/components/TransitCard";
 import { PickupCard } from "@/components/PickupCard";
 import { AppointmentCard } from "@/components/AppointmentCard";
 import { ReviewCard } from "@/components/ReviewCard";
+import { DocumentStatusChip } from "@/components/DocumentStatusChip";
+import {
+  ObservationPriorityChip,
+  ObservationStatusChip,
+} from "@/components/ObservationChips";
 import type { AgencySlug } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
-import { formatDate } from "@/lib/utils";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { relativeDate } from "@/lib/utils";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  AlertTriangle,
+  ArrowRight,
+  CalendarRange,
+  ClipboardList,
+  FileText,
+  Users,
+} from "lucide-react";
 
 export default function AgencePage({
   params,
@@ -72,6 +82,26 @@ export default function AgencePage({
     .filter((r) => r.agencyId === agencySlug)
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   const recentReviews = agencyReviews.slice(0, 3);
+
+  // === Modules Phase 1 enrichis ===
+  const docs = getDocumentsByAgency(agencySlug);
+  const docsOk = docs.filter((d) => d.status === "up_to_date").length;
+  const docsAlert = docs.filter(
+    (d) => d.status === "expired" || d.status === "missing"
+  ).length;
+  const docsAttention = docs.filter((d) => d.status !== "up_to_date").length;
+
+  const employees = getEmployeesByAgency(agencySlug);
+  const currentLeaves = getCurrentLeavesByAgency(agencySlug);
+
+  const observations = getObservationsByAgency(agencySlug);
+  const openObservations = observations.filter((o) => o.status === "open");
+  const hasHighPriorityObs = openObservations.some(
+    (o) => o.priority === "high"
+  );
+  const previewObservations = openObservations
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, 2);
 
   return (
     <div className="space-y-10">
@@ -219,58 +249,174 @@ export default function AgencePage({
 
       <Separator />
 
-      <section className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-serif text-xl">Observations</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {OBSERVATIONS[agencySlug].length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                Aucune observation.
-              </p>
-            ) : (
-              <ul className="space-y-3">
-                {OBSERVATIONS[agencySlug].map((o, i) => (
-                  <li
-                    key={i}
-                    className="rounded-md border border-border bg-muted/30 p-3"
-                  >
-                    <p className="text-sm text-foreground">{o.text}</p>
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      {formatDate(o.date)} · {o.author}
-                    </p>
-                  </li>
-                ))}
-              </ul>
+      {/* === Documents légaux === */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+            <FileText className="size-5 text-[var(--gold)]" aria-hidden />
+            Documents légaux
+            {docsAlert > 0 && (
+              <Badge className="ml-2 bg-red-600 text-white">
+                <AlertTriangle className="size-3" /> {docsAlert} à régulariser
+              </Badge>
             )}
-            <p className="text-xs italic text-muted-foreground">
-              (Module observations — stub statique pour cette ébauche)
-            </p>
-          </CardContent>
-        </Card>
-
+          </h2>
+          <Link
+            href={`/agence/${agencySlug}/documents`}
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
         <Card>
-          <CardHeader>
-            <CardTitle className="font-serif text-xl">Équipe</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="divide-y divide-border">
-              {TEAM[agencySlug].map((m) => (
-                <li
-                  key={m.name}
-                  className="flex items-center justify-between py-3 text-sm"
-                >
-                  <span className="text-foreground">{m.name}</span>
-                  <span className="text-muted-foreground">{m.role}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-4 text-xs italic text-muted-foreground">
-              (Module équipe — stub statique)
+          <CardContent className="space-y-3 pt-6 text-sm">
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">{docsOk}</span>{" "}
+              document{docsOk > 1 ? "s" : ""} à jour
+              {docsAttention > 0 && (
+                <>
+                  {" "}
+                  ·{" "}
+                  <span className="font-medium text-[var(--gold)]">
+                    {docsAttention}
+                  </span>{" "}
+                  attention requise
+                </>
+              )}
             </p>
+            {docs
+              .filter((d) => d.status !== "up_to_date")
+              .slice(0, 3)
+              .map((d) => (
+                <div
+                  key={d.id}
+                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-3"
+                >
+                  <p className="text-sm text-foreground">{d.name}</p>
+                  <DocumentStatusChip status={d.status} />
+                </div>
+              ))}
+            <Link
+              href={`/agence/${agencySlug}/documents`}
+              className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
+            >
+              Gérer les documents <ArrowRight className="size-3" />
+            </Link>
           </CardContent>
         </Card>
+      </section>
+
+      {/* === Équipe === */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+            <Users className="size-5 text-[var(--gold)]" aria-hidden />
+            Équipe
+            {currentLeaves.length > 0 && (
+              <Badge className="ml-2 bg-[var(--gold)] text-primary-foreground">
+                <CalendarRange className="size-3" /> {currentLeaves.length}{" "}
+                absent{currentLeaves.length > 1 ? "s" : ""} aujourd'hui
+              </Badge>
+            )}
+          </h2>
+          <Link
+            href={`/agence/${agencySlug}/equipe`}
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        <Card>
+          <CardContent className="space-y-3 pt-6 text-sm">
+            <p className="text-muted-foreground">
+              <span className="font-medium text-foreground">
+                {employees.length}
+              </span>{" "}
+              employé{employees.length > 1 ? "s" : ""} actif
+              {employees.length > 1 ? "s" : ""}
+              {(() => {
+                const mgr = employees.find((e) => e.role === "responsable");
+                return mgr ? (
+                  <>
+                    {" "}
+                    · Responsable :{" "}
+                    <span className="text-foreground">
+                      {mgr.firstName} {mgr.lastName}
+                    </span>
+                  </>
+                ) : null;
+              })()}
+            </p>
+            <Link
+              href={`/agence/${agencySlug}/equipe`}
+              className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
+            >
+              Gérer l'équipe & le planning <ArrowRight className="size-3" />
+            </Link>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* === Observations === */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+            <ClipboardList
+              className="size-5 text-[var(--gold)]"
+              aria-hidden
+            />
+            Observations
+            {openObservations.length > 0 && (
+              <Badge className="ml-2 bg-[var(--gold)] text-primary-foreground">
+                {openObservations.length} ouverte
+                {openObservations.length > 1 ? "s" : ""}
+              </Badge>
+            )}
+            {hasHighPriorityObs && (
+              <Badge className="bg-red-600 text-white">
+                <AlertTriangle className="size-3" /> priorité haute
+              </Badge>
+            )}
+          </h2>
+          <Link
+            href={`/agence/${agencySlug}/observations`}
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        {previewObservations.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-sm text-muted-foreground">
+              Aucune observation ouverte pour cette agence.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {previewObservations.map((o) => (
+              <Card key={o.id}>
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <ObservationStatusChip status={o.status} />
+                    <ObservationPriorityChip priority={o.priority} />
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {relativeDate(o.createdAt)}
+                  </span>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p className="line-clamp-3 text-foreground">{o.text}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Par{" "}
+                    <span className="font-medium text-foreground">
+                      {o.authorName}
+                    </span>
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

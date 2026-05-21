@@ -96,3 +96,67 @@ export type Review = {
   createdAt: string;
   agencyId: AgencySlug;
 };
+
+// === Documents légaux par agence ===
+
+export type DocumentStatus =
+  | "up_to_date"
+  | "expiring_soon"
+  | "expired"
+  | "missing";
+
+export type DocumentCategory = "kbis" | "declaration" | "id" | "other";
+
+export type LegalDocument = {
+  id: string;
+  agencyId: AgencySlug;
+  name: string;
+  category: DocumentCategory;
+  fileName?: string;
+  uploadedAt?: string;
+  expiresAt?: string;
+  status: DocumentStatus;
+};
+
+// === Équipe & planning ===
+
+export type EmployeeRole = "responsable" | "cambiste" | "apprenti" | "stagiaire";
+
+export type Employee = {
+  id: string;
+  agencyId: AgencySlug;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  role: EmployeeRole;
+  startedAt: string;
+};
+
+export type LeaveType = "paid" | "unpaid" | "sick" | "training";
+
+export type Leave = {
+  id: string;
+  employeeId: string;
+  agencyId: AgencySlug;
+  type: LeaveType;
+  startsAt: string;
+  endsAt: string;
+  reason?: string;
+};
+
+// === Observations agences ===
+
+export type ObservationStatus = "open" | "resolved";
+export type ObservationPriority = "low" | "normal" | "high";
+
+export type Observation = {
+  id: string;
+  agencyId: AgencySlug;
+  text: string;
+  authorName: string;
+  createdAt: string;
+  resolvedAt?: string;
+  status: ObservationStatus;
+  priority: ObservationPriority;
+};
