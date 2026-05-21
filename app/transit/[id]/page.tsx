@@ -1,24 +1,28 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { notFound, useRouter } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
+import { toast } from "sonner";
 import { agencyBySlug, getTransit, updateTransit } from "@/lib/mock";
 import { useRole } from "@/lib/role-context";
 import { StatusChip } from "@/components/StatusChip";
-import { ActionButton } from "@/components/ActionButton";
-import { useToast } from "@/components/ToastProvider";
 import { formatDateTime } from "@/lib/utils";
 import type { Transit } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
-export default function TransitDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TransitDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
-  const router = useRouter();
-  const { push } = useToast();
   const { role, roleLabel, isPietro } = useRole();
 
   const initial = getTransit(id);
-  // On garde un state local pour refléter les mutations en mémoire sans re-mount
   const [transit, setTransit] = useState<Transit | undefined>(initial);
 
   useEffect(() => {
@@ -30,7 +34,6 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
   const fromAgency = agencyBySlug(transit.from);
   const toAgency = agencyBySlug(transit.to);
 
-  // Capacités selon rôle
   const isSender = role.kind === "agency" && role.agencySlug === transit.from;
   const isRecipient = role.kind === "agency" && role.agencySlug === transit.to;
 
@@ -38,7 +41,7 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
     const updated = updateTransit(transit!.id, fn);
     if (updated) {
       setTransit({ ...updated });
-      push(toastText, "success");
+      toast.success(toastText);
     }
   }
 
@@ -47,7 +50,6 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
     return agencyBySlug(role.agencySlug).name;
   }
 
-  // --- ACTIONS ---
   function validate() {
     mutate(
       (t) => ({
@@ -55,7 +57,11 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
         status: "validated",
         events: [
           ...t.events,
-          { date: new Date().toISOString(), label: "Validé par destinataire", by: actorLabel() },
+          {
+            date: new Date().toISOString(),
+            label: "Validé par destinataire",
+            by: actorLabel(),
+          },
         ],
       }),
       "Bon validé"
@@ -72,7 +78,11 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
         refusalReason: reason,
         events: [
           ...t.events,
-          { date: new Date().toISOString(), label: `Refusé : ${reason}`, by: actorLabel() },
+          {
+            date: new Date().toISOString(),
+            label: `Refusé : ${reason}`,
+            by: actorLabel(),
+          },
         ],
       }),
       "Bon refusé"
@@ -86,7 +96,11 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
         status: "in_transit",
         events: [
           ...t.events,
-          { date: new Date().toISOString(), label: "Expédié", by: actorLabel() },
+          {
+            date: new Date().toISOString(),
+            label: "Expédié",
+            by: actorLabel(),
+          },
         ],
       }),
       "Expédition enregistrée"
@@ -100,7 +114,11 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
         status: "received",
         events: [
           ...t.events,
-          { date: new Date().toISOString(), label: "Réceptionné", by: actorLabel() },
+          {
+            date: new Date().toISOString(),
+            label: "Réceptionné",
+            by: actorLabel(),
+          },
         ],
       }),
       "Réception confirmée"
@@ -113,7 +131,7 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
       "FA-2026-"
     );
     if (!inv || inv.trim().length < 4) {
-      push("Numéro de facture invalide", "error");
+      toast.error("Numéro de facture invalide");
       return;
     }
     mutate(
@@ -152,154 +170,190 @@ export default function TransitDetailPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // --- Affichage actions selon règles métier ---
-  const showValidate =
-    (isRecipient || isPietro) && transit.status === "pending";
+  const showValidate = (isRecipient || isPietro) && transit.status === "pending";
   const showRefuse = (isRecipient || isPietro) && transit.status === "pending";
-  // L'expédition n'est possible QU'APRÈS validation
-  const showShip =
-    (isSender || isPietro) && transit.status === "validated";
+  const showShip = (isSender || isPietro) && transit.status === "validated";
   const showReceive =
     (isRecipient || isPietro) && transit.status === "in_transit";
   const showDeclarePaid =
     (isRecipient || isPietro) && transit.status === "received";
   const showPietroVerify = isPietro && transit.status === "paid_unverified";
 
+  const noAction =
+    !showValidate &&
+    !showRefuse &&
+    !showShip &&
+    !showReceive &&
+    !showDeclarePaid &&
+    !showPietroVerify;
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
-        <Link href="/transit" className="text-sm text-cream-dim hover:text-gold">
-          ← Tous les transits
+        <Link
+          href="/transit"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[var(--gold)]"
+        >
+          <ArrowLeft className="size-4" />
+          Tous les transits
         </Link>
-        <span className="text-xs text-cream-dim">
-          Connecté en <span className="text-gold">{roleLabel}</span>
+        <span className="text-xs text-muted-foreground">
+          Connecté en{" "}
+          <span className="font-medium text-[var(--gold)]">{roleLabel}</span>
         </span>
       </div>
 
-      <header className="rounded-xl border border-cream-faint bg-dark2 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-gold">Bon de transit</p>
-            <h1 className="mt-1 font-serif text-4xl text-cream">{transit.reference}</h1>
-            <p className="mt-2 text-cream-dim">
-              <span className="text-cream">{fromAgency.name}</span>
-              <span className="mx-2">→</span>
-              <span className="text-cream">{toAgency.name}</span>
-              <span className="mx-2">·</span>
-              {transit.transporter}
-              <span className="mx-2">·</span>
-              Créé le {formatDateTime(transit.createdAt)}
-            </p>
+      <Card>
+        <CardHeader>
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+                Bon de transit
+              </p>
+              <h1 className="mt-1 font-serif text-4xl text-foreground">
+                {transit.reference}
+              </h1>
+              <p className="mt-2 flex flex-wrap items-center gap-1.5 text-muted-foreground">
+                <span className="text-foreground">{fromAgency.name}</span>
+                <ArrowRight className="size-3.5" aria-hidden />
+                <span className="text-foreground">{toAgency.name}</span>
+                <span className="mx-1">·</span>
+                {transit.transporter}
+                <span className="mx-1">·</span>
+                Créé le {formatDateTime(transit.createdAt)}
+              </p>
+            </div>
+            <StatusChip status={transit.status} />
           </div>
-          <StatusChip status={transit.status} />
-        </div>
-
-        {transit.invoiceNumber && (
-          <p className="mt-4 text-sm text-cream">
-            Facture&nbsp;: <span className="text-gold">{transit.invoiceNumber}</span>
-          </p>
-        )}
-        {transit.refusalReason && (
-          <p className="mt-4 rounded-md border border-[#4a2424] bg-[#341a1a] p-3 text-sm text-[#f0c4c4]">
-            Motif de refus&nbsp;: {transit.refusalReason}
-          </p>
-        )}
-      </header>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {transit.invoiceNumber && (
+            <p className="text-sm">
+              Facture&nbsp;:{" "}
+              <span className="font-medium text-[var(--gold)]">
+                {transit.invoiceNumber}
+              </span>
+            </p>
+          )}
+          {transit.refusalReason && (
+            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <span className="font-medium">Motif de refus&nbsp;: </span>
+              {transit.refusalReason}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <section className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2 space-y-6">
-          <div className="rounded-xl border border-cream-faint bg-dark2 p-6">
-            <h2 className="mb-3 font-serif text-xl text-cream">Descriptif</h2>
-            <p className="whitespace-pre-line text-sm text-cream">{transit.description}</p>
-          </div>
+        <div className="space-y-6 md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-serif text-xl">Descriptif</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-line text-sm text-foreground">
+                {transit.description}
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="rounded-xl border border-cream-faint bg-dark2 p-6">
-            <h2 className="mb-4 font-serif text-xl text-cream">Historique</h2>
-            <ol className="space-y-3">
-              {transit.events.map((e, i) => (
-                <li key={i} className="flex gap-3">
-                  <span
-                    className="mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full bg-gold"
-                    aria-hidden
-                  />
-                  <div className="flex-1 border-b border-cream-faint pb-3 last:border-b-0">
-                    <p className="text-sm text-cream">{e.label}</p>
-                    <p className="mt-0.5 text-xs text-cream-dim">
-                      {formatDateTime(e.date)} · {e.by}
-                    </p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-serif text-xl">Historique</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ol className="space-y-3">
+                {transit.events.map((e, i) => (
+                  <li key={i} className="flex gap-3">
+                    <span
+                      className="mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--gold)]"
+                      aria-hidden
+                    />
+                    <div className="flex-1 border-b border-border pb-3 last:border-b-0">
+                      <p className="text-sm text-foreground">{e.label}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {formatDateTime(e.date)} · {e.by}
+                      </p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
         </div>
 
         <aside className="space-y-4">
-          <div className="rounded-xl border border-cream-faint bg-dark2 p-6">
-            <h3 className="mb-3 font-serif text-lg text-cream">Actions</h3>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-serif text-lg">Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {noAction ? (
+                <p className="text-sm text-muted-foreground">
+                  Aucune action disponible pour votre rôle au statut actuel.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {showValidate && (
+                    <Button onClick={validate}>Valider le bon</Button>
+                  )}
+                  {showRefuse && (
+                    <Button variant="destructive" onClick={refuse}>
+                      Refuser
+                    </Button>
+                  )}
+                  {showShip && (
+                    <Button onClick={ship}>Marquer comme expédié</Button>
+                  )}
+                  {showReceive && (
+                    <Button onClick={receive}>Confirmer réception</Button>
+                  )}
+                  {showDeclarePaid && (
+                    <Button onClick={declarePaid}>Facturé + Payé</Button>
+                  )}
+                  {showPietroVerify && (
+                    <Button onClick={pietroVerify}>
+                      Vérifier virement &amp; clôturer
+                    </Button>
+                  )}
+                </div>
+              )}
 
-            {!showValidate &&
-            !showRefuse &&
-            !showShip &&
-            !showReceive &&
-            !showDeclarePaid &&
-            !showPietroVerify ? (
-              <p className="text-sm text-cream-dim">
-                Aucune action disponible pour votre rôle au statut actuel.
+              <Separator />
+
+              <p className="text-xs text-muted-foreground">
+                {transit.status === "pending" &&
+                  "En attente de validation du destinataire."}
+                {transit.status === "validated" &&
+                  "Validé — l'agence émettrice peut maintenant expédier."}
+                {transit.status === "in_transit" &&
+                  "Colis en route — réception à confirmer."}
+                {transit.status === "received" &&
+                  "Reçu — destinataire doit déclarer paiement avec n° de facture."}
+                {transit.status === "paid_unverified" &&
+                  "En attente de vérification bancaire par Pietro."}
+                {transit.status === "closed" && "Bon clôturé."}
+                {transit.status === "refused" &&
+                  "Bon refusé — recréer un nouveau bon si besoin."}
               </p>
-            ) : (
-              <div className="flex flex-col gap-2">
-                {showValidate && (
-                  <ActionButton onClick={validate}>Valider le bon</ActionButton>
-                )}
-                {showRefuse && (
-                  <ActionButton variant="danger" onClick={refuse}>
-                    Refuser
-                  </ActionButton>
-                )}
-                {showShip && (
-                  <ActionButton onClick={ship}>Marquer comme expédié</ActionButton>
-                )}
-                {showReceive && (
-                  <ActionButton onClick={receive}>Confirmer réception</ActionButton>
-                )}
-                {showDeclarePaid && (
-                  <ActionButton variant="primary" onClick={declarePaid}>
-                    Facturé + Payé
-                  </ActionButton>
-                )}
-                {showPietroVerify && (
-                  <ActionButton onClick={pietroVerify}>
-                    Vérifier virement &amp; clôturer
-                  </ActionButton>
-                )}
-              </div>
-            )}
+            </CardContent>
+          </Card>
 
-            <div className="mt-4 border-t border-cream-faint pt-3 text-xs text-cream-dim">
-              {transit.status === "pending" && "En attente de validation du destinataire."}
-              {transit.status === "validated" &&
-                "Validé — l'agence émettrice peut maintenant expédier."}
-              {transit.status === "in_transit" &&
-                "Colis en route — réception à confirmer."}
-              {transit.status === "received" &&
-                "Reçu — destinataire doit déclarer paiement avec n° de facture."}
-              {transit.status === "paid_unverified" &&
-                "En attente de vérification bancaire par Pietro."}
-              {transit.status === "closed" && "Bon clôturé."}
-              {transit.status === "refused" && "Bon refusé — recréer un nouveau bon si besoin."}
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-cream-faint bg-dark2 p-6 text-xs text-cream-dim">
-            <p className="mb-2 font-medium text-cream">Adresses</p>
-            <p>
-              <span className="text-cream">Émetteur&nbsp;:</span> {fromAgency.address}
-            </p>
-            <p className="mt-2">
-              <span className="text-cream">Destinataire&nbsp;:</span> {toAgency.address}
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm font-medium">Adresses</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2 text-xs text-muted-foreground">
+              <p>
+                <span className="text-foreground">Émetteur&nbsp;:</span>{" "}
+                {fromAgency.address}
+              </p>
+              <p>
+                <span className="text-foreground">Destinataire&nbsp;:</span>{" "}
+                {toAgency.address}
+              </p>
+            </CardContent>
+          </Card>
         </aside>
       </section>
     </div>

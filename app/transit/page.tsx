@@ -7,6 +7,8 @@ import { TransitCard } from "@/components/TransitCard";
 import type { TransitStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const STATUSES: (TransitStatus | "all")[] = [
   "all",
@@ -26,7 +28,9 @@ export default function TransitListPage() {
   const transits = useMemo(() => {
     let all = getAllTransits();
     if (role.kind === "agency") {
-      all = all.filter((t) => t.from === role.agencySlug || t.to === role.agencySlug);
+      all = all.filter(
+        (t) => t.from === role.agencySlug || t.to === role.agencySlug
+      );
     }
     if (filter !== "all") {
       all = all.filter((t) => t.status === filter);
@@ -38,20 +42,22 @@ export default function TransitListPage() {
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-gold">Module</p>
-          <h1 className="font-serif text-4xl text-cream">Transit</h1>
-          <p className="mt-1 text-cream-dim">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+            Module
+          </p>
+          <h1 className="font-serif text-4xl text-foreground">Transit</h1>
+          <p className="mt-1 text-muted-foreground">
             {role.kind === "admin"
               ? "Tous les bons de transit du réseau."
               : "Bons impliquant votre agence."}
           </p>
         </div>
-        <Link
-          href="/transit/nouveau"
-          className="rounded-md bg-gold px-4 py-2 text-sm font-medium text-[var(--dark)] transition-colors hover:bg-[var(--gold-light)]"
-        >
-          + Nouveau bon
-        </Link>
+        <Button asChild>
+          <Link href="/transit/nouveau">
+            <Plus className="size-4" />
+            Nouveau bon
+          </Link>
+        </Button>
       </header>
 
       <div className="flex flex-wrap gap-2">
@@ -62,8 +68,8 @@ export default function TransitListPage() {
             className={cn(
               "rounded-full border px-3 py-1.5 text-xs transition-colors",
               filter === s
-                ? "border-gold bg-gold-dim text-cream"
-                : "border-cream-faint text-cream-dim hover:border-gold hover:text-cream"
+                ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
+                : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
             )}
           >
             {s === "all" ? "Tous" : STATUS_LABEL[s]}
@@ -72,9 +78,9 @@ export default function TransitListPage() {
       </div>
 
       {transits.length === 0 ? (
-        <p className="rounded-lg border border-cream-faint bg-dark2 p-8 text-center text-cream-dim">
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Aucun bon correspondant.
-        </p>
+        </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">
           {transits.map((t) => (

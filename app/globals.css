@@ -1,57 +1,133 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
 
 @theme {
   --color-gold: #C9A84C;
   --color-gold-light: #E8CC84;
-  --color-gold-dim: rgba(201, 168, 76, 0.15);
-  --color-dark: #0C0B09;
-  --color-dark2: #141310;
-  --color-dark3: #1C1A16;
-  --color-dark4: #242218;
-  --color-cream: #F0E8D4;
-  --color-cream-dim: rgba(240, 232, 212, 0.6);
-  --color-cream-faint: rgba(240, 232, 212, 0.12);
-
-  --color-status-pending: #6b6357;
-  --color-status-validated: #6FA3C9;
-  --color-status-in-transit: #C9A84C;
-  --color-status-received: #4A86C7;
-  --color-status-paid: #8FB377;
-  --color-status-closed: #4F8B4A;
-  --color-status-refused: #C76A6A;
+  --color-gold-dark: #A88A38;
 
   --font-serif: "DM Serif Display", serif;
   --font-sans: "DM Sans", sans-serif;
 }
 
+/*
+ * Palette light Maison Théve — fond blanc + or #C9A84C primaire
+ * Status colors (sémantiques) :
+ *   pending  = neutre/gris   | validated      = bleu pâle
+ *   in_transit = or          | received       = bleu
+ *   paid_unverified = vert clair | closed     = vert foncé
+ *   refused = rouge
+ */
 :root {
+  /* Brand */
   --gold: #C9A84C;
   --gold-light: #E8CC84;
-  --gold-dim: rgba(201, 168, 76, 0.15);
-  --dark: #0C0B09;
-  --dark2: #141310;
-  --dark3: #1C1A16;
-  --dark4: #242218;
-  --cream: #F0E8D4;
-  --cream-dim: rgba(240, 232, 212, 0.6);
-  --cream-faint: rgba(240, 232, 212, 0.12);
+  --gold-dark: #A88A38;
+
+  /* shadcn — light only */
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(20 14% 12%);
+
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(20 14% 12%);
+
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(20 14% 12%);
+
+  /* Primary = or */
+  --primary: hsl(43 53% 54%);
+  --primary-foreground: hsl(20 14% 12%);
+
+  --secondary: hsl(40 30% 96%);
+  --secondary-foreground: hsl(20 14% 12%);
+
+  --muted: hsl(40 15% 96%);
+  --muted-foreground: hsl(20 8% 42%);
+
+  --accent: hsl(43 53% 96%);
+  --accent-foreground: hsl(20 14% 12%);
+
+  --destructive: hsl(0 70% 48%);
+  --destructive-foreground: hsl(0 0% 100%);
+
+  --border: hsl(30 10% 90%);
+  --input: hsl(30 10% 90%);
+  --ring: hsl(43 53% 54%);
+
+  --radius: 0.625rem;
+
+  /* Sidebar (laissé pour compatibilité shadcn) */
+  --sidebar: hsl(0 0% 100%);
+  --sidebar-foreground: hsl(20 14% 12%);
+  --sidebar-primary: hsl(43 53% 54%);
+  --sidebar-primary-foreground: hsl(20 14% 12%);
+  --sidebar-accent: hsl(43 53% 96%);
+  --sidebar-accent-foreground: hsl(20 14% 12%);
+  --sidebar-border: hsl(30 10% 90%);
+  --sidebar-ring: hsl(43 53% 54%);
+}
+
+@theme inline {
+  --font-heading: var(--font-sans);
+  --font-sans: var(--font-sans);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 @layer base {
-  html, body {
-    background-color: var(--dark);
-    color: var(--cream);
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
     font-family: "DM Sans", system-ui, sans-serif;
     min-height: 100%;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: "DM Serif Display", serif;
-    color: var(--cream);
-  }
-
-  * {
-    border-color: var(--cream-faint);
+    color: var(--foreground);
   }
 
   input, textarea, select {
@@ -60,21 +136,13 @@
 
   ::selection {
     background: var(--gold);
-    color: var(--dark);
+    color: #fff;
   }
 }
 
 @layer utilities {
   .text-gold { color: var(--gold); }
-  .text-cream { color: var(--cream); }
-  .text-cream-dim { color: var(--cream-dim); }
-  .bg-dark { background-color: var(--dark); }
-  .bg-dark2 { background-color: var(--dark2); }
-  .bg-dark3 { background-color: var(--dark3); }
-  .bg-dark4 { background-color: var(--dark4); }
   .bg-gold { background-color: var(--gold); }
-  .bg-gold-dim { background-color: var(--gold-dim); }
   .border-gold { border-color: var(--gold); }
-  .border-cream-faint { border-color: var(--cream-faint); }
   .font-serif { font-family: "DM Serif Display", serif; }
 }

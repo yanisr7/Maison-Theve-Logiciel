@@ -1,27 +1,45 @@
 import type { TransitStatus } from "@/lib/types";
 import { STATUS_LABEL } from "@/lib/mock";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+// Couleurs sémantiques light theme :
+// transit = or, received = blue, paid = green clair, closed = green foncé,
+// pending = gris, validated = bleu pâle, refused = rouge
 const STYLES: Record<TransitStatus, string> = {
-  pending: "bg-[#2a2620] text-[#b8a98c] border-[#3a342a]",
-  validated: "bg-[#1e2a36] text-[#8fb7d6] border-[#2a3a4a]",
-  in_transit: "bg-gold-dim text-gold border-gold",
-  received: "bg-[#162636] text-[#7aa9d6] border-[#1e3550]",
-  paid_unverified: "bg-[#1e2f1c] text-[#a9c98e] border-[#2c4428]",
-  closed: "bg-[#173016] text-[#86c281] border-[#244522]",
-  refused: "bg-[#341a1a] text-[#d68a8a] border-[#4a2424]",
+  pending:
+    "bg-muted text-muted-foreground border-border",
+  validated:
+    "bg-sky-50 text-sky-700 border-sky-200",
+  in_transit:
+    "bg-[var(--gold)]/15 text-[var(--gold-dark)] border-[var(--gold)]/40",
+  received:
+    "bg-blue-50 text-blue-700 border-blue-200",
+  paid_unverified:
+    "bg-emerald-50 text-emerald-700 border-emerald-200",
+  closed:
+    "bg-emerald-600 text-white border-emerald-700",
+  refused:
+    "bg-red-50 text-red-700 border-red-200",
 };
 
-export function StatusChip({ status, className }: { status: TransitStatus; className?: string }) {
+export function StatusChip({
+  status,
+  className,
+}: {
+  status: TransitStatus;
+  className?: string;
+}) {
   return (
-    <span
+    <Badge
+      variant="outline"
       className={cn(
-        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium",
+        "border px-2.5 py-0.5 text-[11px] font-medium",
         STYLES[status],
         className
       )}
     >
       {STATUS_LABEL[status]}
-    </span>
+    </Badge>
   );
 }

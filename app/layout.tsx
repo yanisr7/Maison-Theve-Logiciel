@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { RoleProvider } from "@/lib/role-context";
 import { Nav } from "@/components/Nav";
-import { ToastProvider } from "@/components/ToastProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Maison Théve — Godot & Fils",
@@ -24,12 +25,13 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen bg-dark text-cream antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <RoleProvider>
-          <ToastProvider>
+          <TooltipProvider delayDuration={200}>
             <Nav />
             <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
-          </ToastProvider>
+            <Toaster richColors position="bottom-center" />
+          </TooltipProvider>
         </RoleProvider>
       </body>
     </html>

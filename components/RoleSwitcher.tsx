@@ -2,6 +2,13 @@
 
 import { useRole } from "@/lib/role-context";
 import type { Role } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ROLES: { value: string; label: string; role: Role }[] = [
   { value: "gambetta", label: "Gambetta", role: { kind: "agency", agencySlug: "gambetta" } },
@@ -13,28 +20,31 @@ const ROLES: { value: string; label: string; role: Role }[] = [
 export function RoleSwitcher() {
   const { role, setRole } = useRole();
 
-  const current =
-    role.kind === "admin" ? "admin" : role.agencySlug;
+  const current = role.kind === "admin" ? "admin" : role.agencySlug;
 
   return (
-    <label className="flex items-center gap-2 text-sm">
-      <span className="hidden text-xs uppercase tracking-[0.18em] text-cream-dim sm:inline">
+    <div className="flex items-center gap-2">
+      <span className="hidden text-xs uppercase tracking-[0.18em] text-muted-foreground sm:inline">
         Connecté en tant que
       </span>
-      <select
+      <Select
         value={current}
-        onChange={(e) => {
-          const next = ROLES.find((r) => r.value === e.target.value);
+        onValueChange={(v) => {
+          const next = ROLES.find((r) => r.value === v);
           if (next) setRole(next.role);
         }}
-        className="rounded-md border border-cream-faint bg-dark3 px-3 py-2 text-cream outline-none transition-colors hover:border-gold focus:border-gold"
       >
-        {ROLES.map((r) => (
-          <option key={r.value} value={r.value} className="bg-dark2 text-cream">
-            {r.label}
-          </option>
-        ))}
-      </select>
-    </label>
+        <SelectTrigger className="min-w-[180px]">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {ROLES.map((r) => (
+            <SelectItem key={r.value} value={r.value}>
+              {r.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

@@ -23,19 +23,18 @@ export function Nav() {
   }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-faint bg-dark/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-6 py-4">
         <Link href="/" className="flex items-center gap-3">
           <span
             aria-hidden
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-gold text-gold"
-            style={{ fontFamily: "DM Serif Display, serif" }}
+            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--gold)] text-[var(--gold)] font-serif text-lg"
           >
             G
           </span>
           <span className="flex flex-col leading-tight">
-            <span className="font-serif text-lg text-cream">Godot &amp; Fils</span>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-cream-dim">
+            <span className="font-serif text-lg text-foreground">Godot &amp; Fils</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
               Maison Théve Logiciel
             </span>
           </span>
@@ -52,10 +51,10 @@ export function Nav() {
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm transition-colors",
+                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   active
-                    ? "bg-gold-dim text-cream"
-                    : "text-cream-dim hover:bg-cream-faint hover:text-cream"
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
                 )}
               >
                 {l.label}

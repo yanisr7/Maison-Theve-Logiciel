@@ -15,7 +15,7 @@ export default function HomePage() {
 
   return (
     <div className="flex h-[60vh] items-center justify-center">
-      <p className="text-cream-dim">Chargement…</p>
+      <p className="text-muted-foreground">Chargement…</p>
     </div>
   );
 }
