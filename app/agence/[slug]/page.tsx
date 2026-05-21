@@ -9,8 +9,14 @@ import {
   TEAM,
   agencyBySlug,
   getAllTransits,
+  getAllPickups,
+  getAllAppointments,
+  getAllReviews,
 } from "@/lib/mock";
 import { TransitCard } from "@/components/TransitCard";
+import { PickupCard } from "@/components/PickupCard";
+import { AppointmentCard } from "@/components/AppointmentCard";
+import { ReviewCard } from "@/components/ReviewCard";
 import type { AgencySlug } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { formatDate } from "@/lib/utils";
@@ -41,6 +47,31 @@ export default function AgencePage({
   );
   const sent = transits.filter((t) => t.from === agencySlug);
   const received = transits.filter((t) => t.to === agencySlug);
+
+  const allPickups = getAllPickups().filter(
+    (p) => p.destinationAgencyId === agencySlug
+  );
+  const openPickups = allPickups.filter((p) => p.status !== "picked_up");
+  const recentPickups = [...allPickups]
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, 3);
+
+  const allAppointments = getAllAppointments().filter(
+    (a) => a.agencyId === agencySlug
+  );
+  const today = new Date();
+  const isSameDay = (d: Date) =>
+    d.getFullYear() === today.getFullYear() &&
+    d.getMonth() === today.getMonth() &&
+    d.getDate() === today.getDate();
+  const todaysAppointments = allAppointments.filter((a) =>
+    isSameDay(new Date(a.rescheduledAt ?? a.scheduledAt))
+  );
+
+  const agencyReviews = [...getAllReviews()]
+    .filter((r) => r.agencyId === agencySlug)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const recentReviews = agencyReviews.slice(0, 3);
 
   return (
     <div className="space-y-10">
@@ -102,6 +133,88 @@ export default function AgencePage({
             }
           />
         </div>
+      </section>
+
+      <Separator />
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl text-foreground">
+            Colis point relais
+            {openPickups.length > 0 && (
+              <Badge className="ml-3 bg-[var(--gold)] text-primary-foreground">
+                {openPickups.length} en attente
+              </Badge>
+            )}
+          </h2>
+          <Link
+            href="/colis"
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        {recentPickups.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+            Aucun colis pour cette agence.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-3">
+            {recentPickups.map((p) => (
+              <PickupCard key={p.id} pickup={p} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl text-foreground">
+            RDV du jour
+            {todaysAppointments.length > 0 && (
+              <Badge className="ml-3 bg-[var(--gold)] text-primary-foreground">
+                {todaysAppointments.length}
+              </Badge>
+            )}
+          </h2>
+          <Link
+            href="/rdv"
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        {todaysAppointments.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+            Aucun RDV aujourd'hui.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {todaysAppointments.map((a) => (
+              <AppointmentCard key={a.id} appointment={a} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl text-foreground">Avis clients</h2>
+          <span className="text-xs text-muted-foreground">
+            {agencyReviews.length} avis au total
+          </span>
+        </div>
+        {recentReviews.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+            Aucun avis pour le moment.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-3">
+            {recentReviews.map((r) => (
+              <ReviewCard key={r.id} review={r} />
+            ))}
+          </div>
+        )}
       </section>
 
       <Separator />

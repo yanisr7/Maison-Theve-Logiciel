@@ -1055,6 +1055,7 @@ footer {
     <li><a href="#architecture">Architecture</a></li>
     <li><a href="#modules">Modules</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#glossary">Glossaire</a></li>
   </ul>
   <span class="nav-date">18 mars 2026</span>
 </nav>
@@ -1069,7 +1070,7 @@ footer {
     Godot & Fils
   </h1>
   <p class="hero-sub">
-    Un SaaS interne pour centraliser le transit d'or entre agences, piloter les opérations en temps réel et unifier tous les outils de travail quotidien.
+    Un SaaS interne pour centraliser le transit d'or entre agences, gérer le point relais Paris → Lille, piloter les RDV clients et unifier tous les outils de travail quotidien.
   </p>
   <div class="hero-meta">
     <div class="hero-stat">
@@ -1077,7 +1078,7 @@ footer {
       <span class="hero-stat-label">agences Lille</span>
     </div>
     <div class="hero-stat">
-      <span class="hero-stat-num">8</span>
+      <span class="hero-stat-num">12</span>
       <span class="hero-stat-label">modules identifiés</span>
     </div>
     <div class="hero-stat">
@@ -1112,8 +1113,11 @@ footer {
           <span class="tag">Gambetta</span>
           <span class="tag">Federbe</span>
           <span class="tag">Grand Béta</span>
-          <span class="tag neutral">+ Valenciennes (futur)</span>
+          <span class="tag neutral">+ Saint-Omer</span>
+          <span class="tag neutral">+ Dunkerque</span>
+          <span class="tag neutral">+ Valenciennes</span>
         </div>
+        <p class="ctx-text" style="margin-top:10px;font-style:italic">L'architecture anticipe l'arrivée des futures agences (Saint-Omer, Dunkerque, Valenciennes) sans refonte technique.</p>
       </div>
       <div class="ctx-card">
         <div class="ctx-icon">💻</div>
@@ -1146,6 +1150,14 @@ footer {
           <div>
             <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Dispersion des ressources</p>
             <p class="ctx-text">Guides franchise, fournitures, photos produits, fournisseurs — chaque agence se débrouille séparément. Aucune mutualisation, perte de temps massive.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">Point relais Paris → Lille non tracké</p>
+            <p class="ctx-text">Les commandes godonet achetées en ligne par les clients arrivent en agence sans suivi structuré. Réception, mise à dispo, retrait client — tout est manuel et oral.</p>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">RDV clients hors plateforme</p>
+            <p class="ctx-text">Les rendez-vous pris en ligne par les clients (estimation, vente) restent dans un back-office séparé. Aucune vue agence du jour, aucune relance satisfaction automatique.</p>
           </div>
         </div>
       </div>
@@ -1275,7 +1287,7 @@ footer {
           </div>
           <div style="background:var(--dark2);border:1px solid var(--border-dim);border-radius:10px;padding:18px">
             <p style="font-size:13px;font-weight:500;color:var(--cream);margin-bottom:6px">🏢 Transporteur trackable</p>
-            <p style="font-size:12px;color:var(--muted);line-height:1.6">Chaque bon renseigne l'organisme transporteur (Thémis, Elite, interne, Pietro…). En cas de problème, on sait immédiatement qui était responsable de la livraison.</p>
+            <p style="font-size:12px;color:var(--muted);line-height:1.6">Chaque bon renseigne l'organisme transporteur — Thémis, Elite, équipe interne, <strong style="color:var(--cream)">ou Pietro lui-même</strong> (il assure parfois la livraison entre agences). En cas de problème, on sait immédiatement qui était responsable.</p>
           </div>
         </div>
       </div>
@@ -1372,9 +1384,9 @@ footer {
 <section id="modules">
   <div class="container">
     <p class="section-eyebrow">04 · Modules</p>
-    <h2 class="section-title">Les <em>8 fonctionnalités</em> identifiées</h2>
+    <h2 class="section-title">Les <em>12 fonctionnalités</em> identifiées</h2>
     <p class="section-lead">
-      Organisées en 3 phases de développement. La Phase 1 constitue le cœur irréductible du projet. Les Phases 2 et 3 s'y greffent progressivement.
+      Organisées en 3 phases de développement. La Phase 1 constitue le cœur irréductible du projet (transit + point relais + RDV + avis). Les Phases 2 et 3 s'y greffent progressivement.
     </p>
 
     <div class="modules-grid reveal">
@@ -1412,6 +1424,42 @@ footer {
           <li>Responsable + liste employés</li>
           <li>Planning & congés</li>
           <li>Notes opérationnelles par agence</li>
+        </ul>
+      </div>
+      <!-- Phase 1 · NOUVEAUX MODULES -->
+      <div class="mod-card ph1 wide">
+        <p class="mod-phase">Phase 1 · Core — Nouveau module</p>
+        <p class="mod-title">Point Relais Paris → Lille</p>
+        <p class="mod-desc">Paris (<strong style="color:var(--cream)">godonet</strong>) envoie en agence des commandes que les clients ont achetées en ligne. L'agence Lille = point de retrait. Distinct visuellement du transit inter-agences pour éviter toute confusion.</p>
+        <ul class="mod-features">
+          <li>3 statuts : <strong style="color:var(--gold)">Annoncé</strong> → <strong style="color:var(--gold)">Disponible en boutique</strong> → <strong style="color:var(--gold)">Remis au client</strong></li>
+          <li>Passage à "Disponible" → email auto client : <em>"Venez retirer sous 48h"</em></li>
+          <li>Données : numéro commande Paris, client (nom / email / tel), descriptif libre, mode de règlement, transporteur</li>
+          <li>Visible uniquement par l'agence destinataire (et Pietro)</li>
+          <li>UI clairement distincte du transit inter-agences</li>
+        </ul>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase">Phase 1 · Core — Nouveau module</p>
+        <p class="mod-title">RDV clients</p>
+        <p class="mod-desc">Les RDV pris en ligne par les clients (vente, estimation) deviennent visibles directement dans le dashboard agence du jour.</p>
+        <ul class="mod-features">
+          <li>Statuts : <strong style="color:var(--gold)">À venir</strong> → <strong style="color:var(--gold)">Effectué</strong> / Annulé / Reporté</li>
+          <li>"Effectué" → email satisfaction client auto</li>
+          <li>Vue agence : agenda du jour</li>
+          <li>Vue Pietro : agrégat réseau, filtrable par agence</li>
+          <li>Données : raison, date, email/tel client</li>
+        </ul>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase">Phase 1 · Core — Nouveau module</p>
+        <p class="mod-title">Avis clients unifiés</p>
+        <p class="mod-desc">Un canal unique pour tous les retours clients, qu'ils viennent du point relais ou d'un RDV. Fini les avis perdus dans les emails.</p>
+        <ul class="mod-features">
+          <li>Note 1 à 5 + commentaire libre</li>
+          <li>Source tracée : <em>pickup</em> ou <em>appointment</em></li>
+          <li>Bloc dédié dans chaque dashboard agence</li>
+          <li>Vue globale réseau pour Pietro avec filtre par agence</li>
         </ul>
       </div>
       <!-- Phase 2 -->
@@ -1459,13 +1507,25 @@ footer {
       </div>
       <div class="mod-card ph3">
         <p class="mod-phase">Phase 3 · IA</p>
-        <p class="mod-title">IA intégrée</p>
-        <p class="mod-desc">Un assistant intelligent directement dans la plateforme, pour la génération d'images, l'aide utilisateur et la commande vocale.</p>
+        <p class="mod-title">Chatbot d'aide & génération d'images</p>
+        <p class="mod-desc">Un assistant passif intégré : il répond aux questions, documente chaque bouton et génère des visuels produits. <em>N'agit pas sur les données.</em></p>
         <ul class="mod-features">
           <li>Chatbot d'aide (chaque bouton documenté)</li>
-          <li>Génération d'images produits (Gemini/Claude)</li>
-          <li>Commande vocale mobile (ex: "qu'est-ce qui est en transit ?")</li>
-          <li>Réponses vocales synthétisées</li>
+          <li>Génération d'images produits (Gemini / Claude)</li>
+          <li>Réponse aux questions <em>"où trouver X ?"</em></li>
+          <li>Pas d'action sur les transits, colis ou RDV</li>
+        </ul>
+      </div>
+      <div class="mod-card ph3 wide">
+        <p class="mod-phase">Phase 3 · IA — Nouveau module</p>
+        <p class="mod-title">Agents IA actionnels (distincts du chatbot)</p>
+        <p class="mod-desc">À distinguer clairement du chatbot d'aide : ces agents <strong style="color:var(--cream)">exécutent réellement</strong> des actions sur la plateforme, par commande vocale ou texte. C'est l'étape au-dessus de l'assistant passif.</p>
+        <ul class="mod-features">
+          <li>Commandes textuelles : <em>"Envoie un mail à Untel"</em>, <em>"Passe cette commande de disponible à plus disponible"</em></li>
+          <li>Commande vocale mobile (utile en boutique, mains occupées)</li>
+          <li>TTS · réponses vocales synthétisées pour usage mobile</li>
+          <li>Confirmation systématique avant exécution d'une action</li>
+          <li>Périmètre d'action borné par rôle (agence vs Pietro)</li>
         </ul>
       </div>
     </div>
@@ -1528,7 +1588,7 @@ footer {
         <div class="rm-num">1</div>
         <div class="rm-body">
           <p class="rm-label" style="color:var(--gold)">Phase 1 · MVP</p>
-          <p class="rm-title">Système de transit + dashboards de base</p>
+          <p class="rm-title">Transit · point relais · RDV · avis · dashboards de base</p>
           <div class="rm-items">
             <span class="rm-chip">Bons de transfert</span>
             <span class="rm-chip">Numéros auto-générés</span>
@@ -1537,6 +1597,11 @@ footer {
             <span class="rm-chip">Notifications mail</span>
             <span class="rm-chip">Transporteur trackable</span>
             <span class="rm-chip">Double validation paiement</span>
+            <span class="rm-chip">Point relais Paris → Lille</span>
+            <span class="rm-chip">Email auto retrait 48h</span>
+            <span class="rm-chip">RDV clients agenda</span>
+            <span class="rm-chip">Email satisfaction auto</span>
+            <span class="rm-chip">Avis clients unifiés</span>
             <span class="rm-chip">Dashboard Pietro 360°</span>
             <span class="rm-chip">Dashboard agences (base)</span>
           </div>
@@ -1562,14 +1627,16 @@ footer {
         <div class="rm-num">3</div>
         <div class="rm-body">
           <p class="rm-label" style="color:#80C894">Phase 3 · IA & contenu</p>
-          <p class="rm-title">Fil d'actualités · chatbot · génération d'images</p>
+          <p class="rm-title">Chatbot d'aide · agents actionnels · fil d'actus</p>
           <div class="rm-items">
             <span class="rm-chip">Actus or curatées par IA</span>
             <span class="rm-chip">Sources validées par Pietro</span>
-            <span class="rm-chip">Chatbot d'aide intégré</span>
+            <span class="rm-chip">Chatbot d'aide (passif)</span>
             <span class="rm-chip">Documentation interactive</span>
             <span class="rm-chip">Génération d'images (Gemini/Claude)</span>
-            <span class="rm-chip">Photos saisonnières auto-générées</span>
+            <span class="rm-chip">Agents IA actionnels (≠ chatbot)</span>
+            <span class="rm-chip">Commande vocale mobile</span>
+            <span class="rm-chip">TTS · réponses vocales</span>
           </div>
         </div>
       </div>
@@ -1577,16 +1644,83 @@ footer {
         <div class="rm-num">4</div>
         <div class="rm-body">
           <p class="rm-label" style="color:var(--muted)">Phase 4 · Automatisation avancée</p>
-          <p class="rm-title">Commande vocale · rapports auto · agents IA</p>
+          <p class="rm-title">Rapports auto · agents proactifs · contenu social</p>
           <div class="rm-items">
-            <span class="rm-chip">Commande vocale mobile</span>
-            <span class="rm-chip">Réponses vocales synthétisées</span>
-            <span class="rm-chip">Rapports mensuels automatisés</span>
             <span class="rm-chip">Agents IA proactifs</span>
             <span class="rm-chip">Posts réseaux sociaux auto</span>
             <span class="rm-chip">Alertes géopolitiques intelligentes</span>
+            <span class="rm-chip">Photos saisonnières auto-générées</span>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOSSAIRE -->
+<section id="glossary">
+  <div class="container">
+    <p class="section-eyebrow">07 · Glossaire</p>
+    <h2 class="section-title">Le <em>vocabulaire</em> métier</h2>
+    <p class="section-lead">Les termes clés du quotidien Godot & Fils, pour que tout le monde parle le même langage dans la plateforme et dans les échanges.</p>
+
+    <div class="modules-grid reveal" style="grid-template-columns:repeat(3,1fr)">
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Métier</p>
+        <p class="mod-title">Cambiste</p>
+        <p class="mod-desc">L'employé au comptoir d'une agence. Il accueille les clients, évalue, achète et vend les métaux précieux.</p>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Légal</p>
+        <p class="mod-title">Registre confié</p>
+        <p class="mod-desc">Livre de police obligatoire : toute marchandise entrante doit y être tracée. Sans lui, l'agence ne peut pas justifier la provenance en cas de contrôle douanier.</p>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Plateforme</p>
+        <p class="mod-title">Godonet</p>
+        <p class="mod-desc">Plateforme Paris depuis laquelle arrivent les commandes clients achetées en ligne, à retirer en agence Lille via le module Point Relais.</p>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Transporteurs</p>
+        <p class="mod-title">Thémis / Elite</p>
+        <p class="mod-desc">Les deux principaux organismes externes utilisés pour le transit entre agences. À renseigner sur chaque bon. Pietro peut aussi être lui-même transporteur.</p>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Transit</p>
+        <p class="mod-title">Numéro d'envoi</p>
+        <p class="mod-desc">ID unique auto-généré à la création de chaque bon. Immuable. Obligatoire sur la facture associée — c'est le pont entre flux physique et comptable.</p>
+      </div>
+      <div class="mod-card ph1">
+        <p class="mod-phase" style="color:var(--gold)">Statuts clés</p>
+        <p class="mod-title">"Disponible en boutique"</p>
+        <p class="mod-desc">Statut Point Relais qui déclenche l'email automatique au client : <em>"Votre commande est arrivée, venez la récupérer sous 48h."</em></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HORS SCOPE -->
+<section id="out-of-scope">
+  <div class="container">
+    <p class="section-eyebrow">08 · Cadrage</p>
+    <h2 class="section-title">Hors <em>scope</em> · à date</h2>
+    <p class="section-lead">Pour rester focus sur le MVP, ces sujets ne sont volontairement pas traités dans les phases actuelles. À reprendre dans une itération ultérieure si Pietro le valide.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:2px;border:1px solid var(--border-dim);border-radius:var(--radius-lg);overflow:hidden" class="reveal">
+      <div style="background:var(--dark2);padding:24px">
+        <p style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Non inclus</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:6px">Rapport mensuel franchise</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6">L'export consolidé à destination de Godot & Fils (siège) reste manuel pour l'instant.</p>
+      </div>
+      <div style="background:var(--dark2);padding:24px">
+        <p style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Non inclus</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:6px">Catalogue produits</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6">Saisie libre des descriptifs (voir principes). Pas de référencement produit structuré.</p>
+      </div>
+      <div style="background:var(--dark2);padding:24px">
+        <p style="font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Non inclus</p>
+        <p style="font-size:14px;font-weight:500;color:var(--cream);margin-bottom:6px">Workflow mobile complet</p>
+        <p style="font-size:12px;color:var(--muted);line-height:1.6">Desktop-first. Le mobile est limité aux consultations rapides et à la commande vocale (Phase 3).</p>
       </div>
     </div>
   </div>
@@ -1595,7 +1729,7 @@ footer {
 <!-- NEXT STEPS -->
 <section style="border-bottom:1px solid var(--border-dim)">
   <div class="container">
-    <p class="section-eyebrow">07 · Suite</p>
+    <p class="section-eyebrow">09 · Suite</p>
     <h2 class="section-title">Prochaines <em>étapes</em></h2>
     <p class="section-lead">Ce qui a été convenu pour avancer concrètement.</p>
 

@@ -1,16 +1,22 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AGENCIES,
   getAllTransits,
   STATUS_LABEL,
   agencyBySlug,
+  getAllPickups,
+  getAllAppointments,
+  getAllReviews,
 } from "@/lib/mock";
 import { TransitCard } from "@/components/TransitCard";
 import { useRole } from "@/lib/role-context";
-import type { TransitStatus } from "@/lib/types";
+import type { AgencySlug, TransitStatus } from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
+import { ReviewCard } from "@/components/ReviewCard";
+import { PickupStatusChip } from "@/components/PickupStatusChip";
 import {
   Card,
   CardContent,
@@ -21,7 +27,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { AlertCircle, ArrowRight, ExternalLink } from "lucide-react";
+import { AlertCircle, ArrowRight, ExternalLink, Package, CalendarClock } from "lucide-react";
+import { cn, formatDateTime } from "@/lib/utils";
 
 const ALL_STATUSES: TransitStatus[] = [
   "pending",
@@ -36,6 +43,29 @@ const ALL_STATUSES: TransitStatus[] = [
 export default function AdminPage() {
   const { isPietro } = useRole();
   const all = getAllTransits();
+  const allPickups = getAllPickups();
+  const allAppointments = getAllAppointments();
+  const allReviews = getAllReviews();
+  const [reviewAgencyFilter, setReviewAgencyFilter] = useState<
+    AgencySlug | "all"
+  >("all");
+
+  const filteredReviews = useMemo(() => {
+    const sorted = [...allReviews].sort((a, b) =>
+      a.createdAt < b.createdAt ? 1 : -1
+    );
+    if (reviewAgencyFilter === "all") return sorted.slice(0, 5);
+    return sorted
+      .filter((r) => r.agencyId === reviewAgencyFilter)
+      .slice(0, 5);
+  }, [allReviews, reviewAgencyFilter]);
+
+  const now = new Date();
+  const upcomingAppointments = allAppointments.filter((a) => {
+    if (a.status !== "scheduled") return false;
+    const d = new Date(a.rescheduledAt ?? a.scheduledAt);
+    return d >= now;
+  });
 
   if (!isPietro) {
     return (
@@ -214,6 +244,184 @@ export default function AdminPage() {
           <div className="grid gap-4 md:grid-cols-2">
             {inFlight.map((t) => (
               <TransitCard key={t.id} transit={t} />
+            ))}
+          </div>
+        )}
+      </section>
+
+      <Separator />
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl text-foreground">
+            Colis point relais — réseau
+          </h2>
+          <Link
+            href="/colis"
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {AGENCIES.map((a) => {
+            const ps = allPickups.filter(
+              (p) => p.destinationAgencyId === a.slug
+            );
+            const open = ps.filter((p) => p.status !== "picked_up");
+            const incoming = ps.filter((p) => p.status === "incoming").length;
+            const available = ps.filter((p) => p.status === "available").length;
+            return (
+              <Card key={a.slug} className="gap-2 py-5">
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <div>
+                    <p className="font-serif text-xl text-foreground">
+                      {a.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {ps.length} colis au total
+                    </p>
+                  </div>
+                  <Package
+                    className="size-5 text-[var(--gold)]"
+                    aria-hidden
+                  />
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <PickupStatusChip status="incoming" />
+                    <span className="font-serif text-lg text-foreground">
+                      {incoming}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <PickupStatusChip status="available" />
+                    <span className="font-serif text-lg text-foreground">
+                      {available}
+                    </span>
+                  </div>
+                  <Separator />
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium text-[var(--gold)]">
+                      {open.length}
+                    </span>{" "}
+                    en attente d'action
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="font-serif text-2xl text-foreground">
+            RDV à venir — réseau
+          </h2>
+          <Link
+            href="/rdv"
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {AGENCIES.map((a) => {
+            const ups = upcomingAppointments.filter(
+              (ap) => ap.agencyId === a.slug
+            );
+            const next = [...ups].sort((x, y) => {
+              const dx = new Date(x.rescheduledAt ?? x.scheduledAt).getTime();
+              const dy = new Date(y.rescheduledAt ?? y.scheduledAt).getTime();
+              return dx - dy;
+            })[0];
+            return (
+              <Card key={a.slug} className="gap-2 py-5">
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <div>
+                    <p className="font-serif text-xl text-foreground">
+                      {a.name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      <span className="font-medium text-[var(--gold)]">
+                        {ups.length}
+                      </span>{" "}
+                      RDV à venir
+                    </p>
+                  </div>
+                  <CalendarClock
+                    className="size-5 text-[var(--gold)]"
+                    aria-hidden
+                  />
+                </CardHeader>
+                <CardContent>
+                  {next ? (
+                    <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+                      <p className="text-foreground">{next.clientName}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        {formatDateTime(next.rescheduledAt ?? next.scheduledAt)}
+                      </p>
+                      <Link
+                        href={`/rdv/${next.id}`}
+                        className="mt-2 inline-block text-xs font-medium text-[var(--gold)] hover:underline"
+                      >
+                        Détail →
+                      </Link>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Aucun RDV à venir.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </section>
+
+      <section>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-serif text-2xl text-foreground">
+            Derniers avis clients
+          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => setReviewAgencyFilter("all")}
+              className={cn(
+                "rounded-full border px-3 py-1 text-xs transition-colors",
+                reviewAgencyFilter === "all"
+                  ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
+                  : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
+              )}
+            >
+              Réseau
+            </button>
+            {AGENCIES.map((a) => (
+              <button
+                key={a.slug}
+                onClick={() => setReviewAgencyFilter(a.slug)}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-xs transition-colors",
+                  reviewAgencyFilter === a.slug
+                    ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
+                    : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
+                )}
+              >
+                {a.name}
+              </button>
+            ))}
+          </div>
+        </div>
+        {filteredReviews.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+            Aucun avis pour ce filtre.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {filteredReviews.map((r) => (
+              <ReviewCard key={r.id} review={r} />
             ))}
           </div>
         )}
