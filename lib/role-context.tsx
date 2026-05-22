@@ -56,9 +56,7 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
         ? "Pietro (Admin)"
         : role.agencySlug === "gambetta"
           ? "Gambetta"
-          : role.agencySlug === "federbe"
-            ? "Federbe"
-            : "Grand Béta";
+          : "Federbe";
     return {
       role,
       setRole,

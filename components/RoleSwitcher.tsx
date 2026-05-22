@@ -13,7 +13,6 @@ import {
 const ROLES: { value: string; label: string; role: Role }[] = [
   { value: "gambetta", label: "Gambetta", role: { kind: "agency", agencySlug: "gambetta" } },
   { value: "federbe", label: "Federbe", role: { kind: "agency", agencySlug: "federbe" } },
-  { value: "grand-beta", label: "Grand Béta", role: { kind: "agency", agencySlug: "grand-beta" } },
   { value: "admin", label: "Pietro (Admin)", role: { kind: "admin" } },
 ];
 

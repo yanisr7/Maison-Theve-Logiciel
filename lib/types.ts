@@ -1,4 +1,4 @@
-export type AgencySlug = "gambetta" | "federbe" | "grand-beta";
+export type AgencySlug = "gambetta" | "federbe";
 
 export type Agency = {
   slug: AgencySlug;

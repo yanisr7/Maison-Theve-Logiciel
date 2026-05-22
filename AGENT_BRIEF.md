@@ -3,7 +3,7 @@
 ## Contexte
 SaaS interne multi-agences pour Godot & Fils (franchise achat-vente métaux précieux à Lille). Le brief produit complet est dans `godot_fils_brief.html` (à lire en premier).
 
-Client : Pietro. Agences : Gambetta, Federbe, Grand Béta (+ Valenciennes/Saint-Omer/Dunkerque à anticiper).
+Client : Pietro. Agences : Gambetta, Federbe (+ Valenciennes/Saint-Omer/Dunkerque à anticiper).
 
 ## Glossaire métier
 - **Cambiste** — employé au comptoir d'une agence
@@ -18,7 +18,7 @@ Client : Pietro. Agences : Gambetta, Federbe, Grand Béta (+ Valenciennes/Saint-
 - **Thème light** (fond blanc), or `#C9A84C` conservé comme couleur de marque
 - Fonts : DM Serif Display (titres) + DM Sans (corps)
 - **Pas de DB, pas d'auth** — mock data JSON dans `lib/mock.ts`
-- **Context React + localStorage** pour switcher de rôle (Gambetta / Federbe / Grand Béta / Pietro)
+- **Context React + localStorage** pour switcher de rôle (Gambetta / Federbe / Pietro)
 
 ## Structure attendue (élargie post-audit transcriptions)
 ```
@@ -131,7 +131,7 @@ Ajouter au dashboard actuel :
 10. **Pietro peut être lui-même transporteur** dans la liste des organismes
 
 ## Mock data attendue
-- 3 agences : Gambetta, Federbe, Grand Béta (adresses fictives Lille)
+- 2 agences : Gambetta, Federbe (adresses fictives Lille)
 - 7+ transits couvrant chaque statut (déjà fait)
 - **6+ colis point relais** couvrant tous les statuts (`incoming`, `available`, `picked_up`) répartis sur les agences
 - **8+ RDV** couvrant tous les statuts (`scheduled`, `done`, `cancelled`, `rescheduled`) à différentes dates (passées + futures)

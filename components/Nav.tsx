@@ -34,12 +34,7 @@ export function Nav() {
           >
             G
           </span>
-          <span className="flex flex-col leading-tight">
-            <span className="font-serif text-lg text-foreground">Godot &amp; Fils</span>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              Maison Théve Logiciel
-            </span>
-          </span>
+          <span className="font-serif text-lg text-foreground">Godot &amp; Fils</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">

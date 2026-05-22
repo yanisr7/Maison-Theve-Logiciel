@@ -586,7 +586,6 @@ function NetworkCurrentLeavesSection() {
   const grouped: Record<AgencySlug, typeof leaves> = {
     gambetta: [],
     federbe: [],
-    "grand-beta": [],
   };
   for (const l of leaves) grouped[l.agencyId].push(l);
 
