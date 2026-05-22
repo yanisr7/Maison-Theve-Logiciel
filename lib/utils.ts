@@ -49,6 +49,16 @@ export function relativeDate(d: string | Date): string {
   return formatDate(date);
 }
 
+const AMOUNT_FORMATTER = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+  maximumFractionDigits: 0,
+});
+
+export function formatAmount(n: number): string {
+  return AMOUNT_FORMATTER.format(n);
+}
+
 export function yearsSince(d: string | Date): string {
   const date = typeof d === "string" ? new Date(d) : d;
   const now = new Date();

@@ -31,6 +31,7 @@ export type Transit = {
   to: AgencySlug;
   transporter: Transporter;
   description: string;
+  amount: number; // montant en euros — affiché sur la facture, utilisé par Pietro pour la vérification bancaire
   status: TransitStatus;
   createdAt: string;
   events: TransitEvent[];

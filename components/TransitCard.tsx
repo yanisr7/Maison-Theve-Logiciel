@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { Transit } from "@/lib/types";
 import { agencyBySlug } from "@/lib/mock";
 import { StatusChip } from "./StatusChip";
-import { formatDate } from "@/lib/utils";
+import { formatAmount, formatDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 
@@ -32,6 +32,9 @@ export function TransitCard({ transit }: { transit: Transit }) {
         <CardContent className="space-y-3">
           <p className="line-clamp-2 text-sm text-muted-foreground">
             {transit.description}
+          </p>
+          <p className="font-serif text-xl text-[var(--gold)]">
+            {formatAmount(transit.amount)}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground">
             <span>Créé le {formatDate(transit.createdAt)}</span>

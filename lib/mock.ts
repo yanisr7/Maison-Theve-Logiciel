@@ -60,6 +60,7 @@ const initialTransits: Transit[] = [
     to: "federbe",
     transporter: "Thémis",
     description: "1 lingot 250g + 3 Napoléons 20F",
+    amount: 18750,
     status: "pending",
     createdAt: "2026-05-18T09:14:00",
     events: [
@@ -73,6 +74,7 @@ const initialTransits: Transit[] = [
     to: "federbe",
     transporter: "Elite",
     description: "5 chaînes or 18k — 35g total + 2 alliances",
+    amount: 2380,
     status: "validated",
     createdAt: "2026-05-17T15:02:00",
     events: [
@@ -87,6 +89,7 @@ const initialTransits: Transit[] = [
     to: "federbe",
     transporter: "Thémis",
     description: "2 lingots 500g + lot bijoux fantaisie",
+    amount: 67400,
     status: "received",
     createdAt: "2026-05-14T09:45:00",
     events: [
@@ -103,6 +106,7 @@ const initialTransits: Transit[] = [
     to: "federbe",
     transporter: "Thémis",
     description: "1 lingot 1kg + 8 Napoléons + lot dentaire 22g",
+    amount: 92150,
     status: "closed",
     createdAt: "2026-05-02T10:00:00",
     invoiceNumber: "FA-2026-0398",
@@ -122,6 +126,7 @@ const initialTransits: Transit[] = [
     to: "gambetta",
     transporter: "Elite",
     description: "Lot bijoux divers 9k — qualité incertaine",
+    amount: 1213,
     status: "refused",
     createdAt: "2026-05-09T13:00:00",
     refusalReason: "Descriptif insuffisant, photo manquante. À refaire avec détails poids/titres.",

@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { agencyBySlug, getTransit, updateTransit } from "@/lib/mock";
 import { useRole } from "@/lib/role-context";
 import { StatusChip } from "@/components/StatusChip";
-import { formatDateTime } from "@/lib/utils";
+import { formatAmount, formatDateTime } from "@/lib/utils";
 import type { Transit } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -223,7 +223,15 @@ export default function TransitDetailPage({
                 Créé le {formatDateTime(transit.createdAt)}
               </p>
             </div>
-            <StatusChip status={transit.status} />
+            <div className="flex flex-col items-end gap-2">
+              <StatusChip status={transit.status} />
+              <p className="font-serif text-3xl text-[var(--gold)]">
+                {formatAmount(transit.amount)}
+              </p>
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Montant facturé
+              </p>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
@@ -239,6 +247,27 @@ export default function TransitDetailPage({
             <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
               <span className="font-medium">Motif de refus&nbsp;: </span>
               {transit.refusalReason}
+            </div>
+          )}
+          {transit.status === "paid_unverified" && isPietro && (
+            <div className="rounded-md border border-[var(--gold)] bg-[var(--gold)]/10 px-4 py-3 text-sm text-foreground">
+              <p className="font-medium">Vérification bancaire</p>
+              <p className="mt-1 text-muted-foreground">
+                Contrôler sur le relevé bancaire&nbsp;: montant attendu ={" "}
+                <span className="font-serif text-base text-[var(--gold)]">
+                  {formatAmount(transit.amount)}
+                </span>
+                {transit.invoiceNumber && (
+                  <>
+                    {" "}
+                    · réf. facture{" "}
+                    <span className="font-medium text-foreground">
+                      {transit.invoiceNumber}
+                    </span>
+                  </>
+                )}
+                .
+              </p>
             </div>
           )}
         </CardContent>

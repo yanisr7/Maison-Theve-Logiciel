@@ -36,9 +36,13 @@ export default function NouveauBonPage() {
   );
   const [transporter, setTransporter] = useState<Transporter>("Thémis");
   const [description, setDescription] = useState("");
+  const [amount, setAmount] = useState<string>("");
 
   const previewRef = useMemo(() => nextReference(), []);
-  const canSubmit = from !== to && description.trim().length > 5;
+  const amountValue = Number.parseInt(amount, 10);
+  const amountValid = Number.isFinite(amountValue) && amountValue > 0;
+  const canSubmit =
+    from !== to && description.trim().length > 5 && amountValid;
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -48,6 +52,7 @@ export default function NouveauBonPage() {
       to,
       transporter,
       description: description.trim(),
+      amount: amountValue,
     });
     toast.success(`Bon ${t.reference} créé`, {
       description: "En attente de validation du destinataire.",
@@ -157,6 +162,25 @@ export default function NouveauBonPage() {
               <p className="text-xs text-muted-foreground">
                 Saisie libre, pas de catalogue. Soyez précis (poids, titres,
                 quantités).
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="amount">Montant (€)</Label>
+              <Input
+                id="amount"
+                type="number"
+                min={0}
+                step={1}
+                required
+                inputMode="numeric"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Ex: 1213"
+              />
+              <p className="text-xs text-muted-foreground">
+                Montant figurant sur la facture, en euros entiers. Utilisé par
+                Pietro pour la vérification bancaire.
               </p>
             </div>
 

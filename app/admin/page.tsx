@@ -46,7 +46,13 @@ import {
   FileText,
   Package,
 } from "lucide-react";
-import { cn, formatDate, formatDateTime, relativeDate } from "@/lib/utils";
+import {
+  cn,
+  formatAmount,
+  formatDate,
+  formatDateTime,
+  relativeDate,
+} from "@/lib/utils";
 
 const ALL_STATUSES: TransitStatus[] = [
   "pending",
@@ -115,10 +121,22 @@ export default function AdminPage() {
   }
 
   const toVerify = all.filter((t) => t.status === "paid_unverified");
+  const totalToVerify = toVerify.reduce((sum, t) => sum + t.amount, 0);
   const inFlight = all.filter((t) =>
     (["pending", "validated", "in_transit", "received"] as TransitStatus[]).includes(
       t.status
     )
+  );
+
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const closedThisMonth = all.filter((t) => {
+    if (t.status !== "closed") return false;
+    const created = new Date(t.createdAt);
+    return created >= monthStart;
+  });
+  const totalClosedMonth = closedThisMonth.reduce(
+    (sum, t) => sum + t.amount,
+    0
   );
 
   const byStatus: Record<TransitStatus, number> = ALL_STATUSES.reduce(
@@ -160,12 +178,20 @@ export default function AdminPage() {
               clôturer.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 rounded-md border border-[var(--gold)]/40 bg-background p-3">
+              <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                Total en attente de vérification bancaire
+              </p>
+              <p className="font-serif text-2xl text-[var(--gold)]">
+                {formatAmount(totalToVerify)}
+              </p>
+            </div>
             <ul className="space-y-2">
               {toVerify.map((t) => (
                 <li
                   key={t.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border bg-background p-3"
                 >
                   <div>
                     <Link
@@ -182,9 +208,14 @@ export default function AdminPage() {
                       </span>
                     </p>
                   </div>
-                  <Button asChild size="sm">
-                    <Link href={`/transit/${t.id}`}>Traiter</Link>
-                  </Button>
+                  <div className="flex items-center gap-3">
+                    <span className="font-serif text-lg text-[var(--gold)]">
+                      {formatAmount(t.amount)}
+                    </span>
+                    <Button asChild size="sm">
+                      <Link href={`/transit/${t.id}`}>Traiter</Link>
+                    </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -210,6 +241,37 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
+          <Card className="gap-2 py-4">
+            <CardContent className="space-y-1 px-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                En attente de vérification bancaire
+              </p>
+              <p className="font-serif text-2xl text-[var(--gold)]">
+                {formatAmount(totalToVerify)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {toVerify.length} bon{toVerify.length > 1 ? "s" : ""}{" "}
+                {STATUS_LABEL.paid_unverified.toLowerCase()}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="gap-2 py-4">
+            <CardContent className="space-y-1 px-4">
+              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                Total réseau — mois en cours (clôturés)
+              </p>
+              <p className="font-serif text-2xl text-[var(--gold)]">
+                {formatAmount(totalClosedMonth)}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {closedThisMonth.length} bon
+                {closedThisMonth.length > 1 ? "s" : ""} clôturé
+                {closedThisMonth.length > 1 ? "s" : ""}
+              </p>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
