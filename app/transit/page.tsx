@@ -2,13 +2,21 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { getAllTransits, STATUS_LABEL } from "@/lib/mock";
-import { TransitCard } from "@/components/TransitCard";
+import { getAllTransits, STATUS_LABEL, agencyBySlug } from "@/lib/mock";
 import type { TransitStatus } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, formatDate, formatAmount } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { StatusChip } from "@/components/StatusChip";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Eye, Plus, Truck } from "lucide-react";
 
 const STATUSES: (TransitStatus | "all")[] = [
   "all",
@@ -22,7 +30,7 @@ const STATUSES: (TransitStatus | "all")[] = [
 ];
 
 export default function TransitListPage() {
-  const { role } = useRole();
+  const { role, isPietro } = useRole();
   const [filter, setFilter] = useState<TransitStatus | "all">("all");
 
   const transits = useMemo(() => {
@@ -47,7 +55,7 @@ export default function TransitListPage() {
           </p>
           <h1 className="font-serif text-4xl text-foreground">Transit</h1>
           <p className="mt-1 text-muted-foreground">
-            {role.kind === "admin"
+            {isPietro
               ? "Tous les bons de transit du réseau."
               : "Bons impliquant votre agence."}
           </p>
@@ -82,10 +90,102 @@ export default function TransitListPage() {
           Aucun bon correspondant.
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {transits.map((t) => (
-            <TransitCard key={t.id} transit={t} />
-          ))}
+        <div className="overflow-hidden rounded-xl border border-border bg-card">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-foreground hover:bg-foreground">
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                  Référence
+                </TableHead>
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                  Date
+                </TableHead>
+                {isPietro && (
+                  <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                    De → Vers
+                  </TableHead>
+                )}
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em] text-right">
+                  Montant
+                </TableHead>
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                  Statut
+                </TableHead>
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em] text-right">
+                  Action
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {transits.map((t) => {
+                const lastEvent = t.events[t.events.length - 1];
+                const showShippingInfo =
+                  t.status === "in_transit" || t.status === "received";
+                return (
+                  <TableRow key={t.id} className="hover:bg-muted/40">
+                    <TableCell className="py-3 font-medium">
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground">{t.reference}</span>
+                        <Link
+                          href={`/transit/${t.id}`}
+                          aria-label="Aperçu"
+                          title="Aperçu"
+                          className="inline-flex size-6 items-center justify-center rounded border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] transition-colors hover:bg-[var(--gold)]/20"
+                        >
+                          <Eye className="size-3.5" />
+                        </Link>
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="py-3 text-muted-foreground">
+                      {formatDate(t.createdAt)}
+                    </TableCell>
+
+                    {isPietro && (
+                      <TableCell className="py-3 text-sm text-muted-foreground">
+                        {agencyBySlug(t.from).name}
+                        <span className="mx-1.5 text-[var(--gold)]">→</span>
+                        {agencyBySlug(t.to).name}
+                      </TableCell>
+                    )}
+
+                    <TableCell className="py-3 text-right font-serif text-base text-[var(--gold)]">
+                      {formatAmount(t.amount)}
+                    </TableCell>
+
+                    <TableCell className="py-3">
+                      <div className="flex flex-col gap-1">
+                        <StatusChip status={t.status} />
+                        {showShippingInfo && lastEvent && (
+                          <span className="text-[11px] text-muted-foreground">
+                            {t.transporter} · {formatDate(lastEvent.date)}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+
+                    <TableCell className="py-3 text-right">
+                      <div className="flex flex-col items-end gap-1.5">
+                        {t.status === "in_transit" && (
+                          <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
+                            <Truck className="size-3" />
+                            Infos suivi
+                          </span>
+                        )}
+                        <Button
+                          asChild
+                          size="sm"
+                          className="h-8 text-[11px] uppercase tracking-wider"
+                        >
+                          <Link href={`/transit/${t.id}`}>Voir en détail</Link>
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </div>
       )}
     </div>
