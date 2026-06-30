@@ -169,10 +169,10 @@ export default function MessagesPage() {
                     type="button"
                     onClick={() => openConversation(c.otherKey)}
                     className={cn(
-                      "flex w-full flex-col gap-0.5 rounded-xl px-3 py-2 text-left transition-colors",
+                      "flex w-full flex-col gap-0.5 rounded-xl border px-3 py-2 text-left transition-colors",
                       active
-                        ? "bg-[var(--gold)]/10 ring-1 ring-[var(--gold)]/40"
-                        : "hover:bg-muted"
+                        ? "border-[var(--gold)]/50 bg-[var(--gold)]/10"
+                        : "border-transparent hover:bg-muted"
                     )}
                   >
                     <div className="flex items-center justify-between gap-2">
