@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { RoleProvider } from "@/lib/role-context";
-import { Nav } from "@/components/Nav";
+import { AppShell } from "@/components/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -28,8 +28,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-background text-foreground antialiased">
         <RoleProvider>
           <TooltipProvider delayDuration={200}>
-            <Nav />
-            <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
+            <AppShell>{children}</AppShell>
             <Toaster richColors position="bottom-center" />
           </TooltipProvider>
         </RoleProvider>

@@ -1,75 +1,129 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import type { AgencySlug, Role } from "./types";
 import { AGENCIES } from "./mock";
+import { supabase } from "./supabase";
 
-const STORAGE_KEY = "mtl.role";
+type AuthStatus = "loading" | "authed" | "anon";
 
 type RoleContextValue = {
+  status: AuthStatus;
+  // Non-null pour les consommateurs : les pages ne sont rendues qu'une fois
+  // authentifié (cf. AppShell), donc `role` y est toujours réel.
   role: Role;
-  setRole: (r: Role) => void;
+  email: string | null;
   isPietro: boolean;
   isAgency: (slug: AgencySlug) => boolean;
   roleLabel: string;
+  signOut: () => Promise<void>;
 };
 
 const RoleContext = createContext<RoleContextValue | null>(null);
 
-const DEFAULT_ROLE: Role = { kind: "agency", agencySlug: "gambetta" };
+// Fallback technique utilisé uniquement avant chargement du profil (jamais rendu
+// car AppShell affiche un écran de chargement / redirige vers /login).
+const FALLBACK_ROLE: Role = { kind: "agency", agencySlug: "gambetta" };
 
-function safeRead(): Role {
-  if (typeof window === "undefined") return DEFAULT_ROLE;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return DEFAULT_ROLE;
-    const parsed = JSON.parse(raw) as Role;
-    if (parsed?.kind === "admin") return parsed;
-    if (parsed?.kind === "agency" && parsed.agencySlug) return parsed;
-    return DEFAULT_ROLE;
-  } catch {
-    return DEFAULT_ROLE;
-  }
+function roleFromProfile(p: {
+  role: string;
+  agency_slug: string | null;
+}): Role {
+  if (p.role === "admin") return { kind: "admin" };
+  return { kind: "agency", agencySlug: (p.agency_slug ?? "gambetta") as AgencySlug };
 }
 
 export function RoleProvider({ children }: { children: React.ReactNode }) {
-  const [role, setRoleState] = useState<Role>(DEFAULT_ROLE);
-  const [hydrated, setHydrated] = useState(false);
+  const [status, setStatus] = useState<AuthStatus>("loading");
+  const [role, setRole] = useState<Role | null>(null);
+  const [email, setEmail] = useState<string | null>(null);
+  const [fullName, setFullName] = useState<string | null>(null);
 
-  useEffect(() => {
-    setRoleState(safeRead());
-    setHydrated(true);
-  }, []);
-
-  const setRole = useCallback((r: Role) => {
-    setRoleState(r);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(r));
-    } catch {
-      // ignore
+  const loadProfile = useCallback(async (userId: string, userEmail: string | null) => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("role, agency_slug, full_name")
+      .eq("id", userId)
+      .maybeSingle();
+    if (data) {
+      setRole(roleFromProfile(data));
+      setFullName(data.full_name);
+      setEmail(userEmail);
+      setStatus("authed");
+    } else {
+      // Compte sans profil → traité comme non connecté
+      setRole(null);
+      setStatus("anon");
     }
   }, []);
 
-  const value = useMemo<RoleContextValue>(() => {
-    const isPietro = role.kind === "admin";
-    const roleLabel =
-      role.kind === "admin"
-        ? "Pietro (Admin)"
-        : (AGENCIES.find((a) => a.slug === role.agencySlug)?.name ??
-          role.agencySlug);
-    return {
-      role,
-      setRole,
-      isPietro,
-      isAgency: (slug: AgencySlug) => role.kind === "agency" && role.agencySlug === slug,
-      roleLabel,
-    };
-  }, [role, setRole]);
+  useEffect(() => {
+    let active = true;
+    supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
+      const session = data.session;
+      if (session?.user) {
+        loadProfile(session.user.id, session.user.email ?? null);
+      } else {
+        setStatus("anon");
+      }
+    });
 
-  // Empêche un flash de mauvais rôle au premier rendu côté client (mais on SSR quand même)
-  if (!hydrated) {
-    return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
-  }
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return;
+      if (session?.user) {
+        setStatus("loading");
+        loadProfile(session.user.id, session.user.email ?? null);
+      } else {
+        setRole(null);
+        setEmail(null);
+        setFullName(null);
+        setStatus("anon");
+      }
+    });
+
+    return () => {
+      active = false;
+      sub.subscription.unsubscribe();
+    };
+  }, [loadProfile]);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+    setRole(null);
+    setEmail(null);
+    setFullName(null);
+    setStatus("anon");
+  }, []);
+
+  const value = useMemo<RoleContextValue>(() => {
+    const isPietro = role?.kind === "admin";
+    const roleLabel =
+      role == null
+        ? ""
+        : role.kind === "admin"
+          ? fullName ?? "Pietro (Admin)"
+          : fullName ??
+            AGENCIES.find((a) => a.slug === role.agencySlug)?.name ??
+            role.agencySlug;
+    return {
+      status,
+      role: role ?? FALLBACK_ROLE,
+      email,
+      isPietro,
+      isAgency: (slug: AgencySlug) =>
+        role?.kind === "agency" && role.agencySlug === slug,
+      roleLabel,
+      signOut,
+    };
+  }, [role, email, fullName, status, signOut]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 }
