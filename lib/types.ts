@@ -234,3 +234,25 @@ export type Proposal = {
   status: ProposalStatus;
   createdAt: string;
 };
+
+// === Messagerie interne (1-à-1) ===
+// Une "partie" est identifiée par une clé : "admin" (Pietro) ou un slug d'agence.
+
+export type ParticipantKey = "admin" | AgencySlug;
+
+export type Message = {
+  id: string;
+  fromKey: ParticipantKey;
+  toKey: ParticipantKey;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+};
+
+// Résumé d'une conversation pour le listing.
+export type ConversationSummary = {
+  otherKey: ParticipantKey;
+  lastBody: string;
+  lastAt: string;
+  unread: number;
+};

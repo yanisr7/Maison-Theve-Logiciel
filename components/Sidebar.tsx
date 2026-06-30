@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useRole } from "@/lib/role-context";
 import { AGENCIES, agencyBySlug } from "@/lib/mock";
 import { getAllProposals, getProposalsByAgency } from "@/lib/proposals-db";
+import { getUnreadCount } from "@/lib/messages-db";
+import type { ParticipantKey } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import {
@@ -31,6 +33,7 @@ import {
   ClipboardList,
   ShieldAlert,
   Lightbulb,
+  MessageSquare,
 } from "lucide-react";
 
 type NavItem = {
@@ -72,6 +75,24 @@ export function Sidebar() {
     };
   }, [proposalScope]);
 
+  // Messages non lus (badge Messagerie). Clé = "admin" (Pietro) ou slug agence.
+  const [unreadMsgs, setUnreadMsgs] = useState(0);
+  const myKey: ParticipantKey | null =
+    role.kind === "agency" ? role.agencySlug : isPietro ? "admin" : null;
+  useEffect(() => {
+    let active = true;
+    if (!myKey) {
+      setUnreadMsgs(0);
+      return;
+    }
+    getUnreadCount(myKey)
+      .then((n) => active && setUnreadMsgs(n))
+      .catch(() => active && setUnreadMsgs(0));
+    return () => {
+      active = false;
+    };
+  }, [myKey]);
+
   const agencyHref =
     role.kind === "agency" ? `/agence/${role.agencySlug}` : "/admin";
 
@@ -82,6 +103,12 @@ export function Sidebar() {
     { href: "/transit", label: "Transit", icon: Truck },
     { href: "/colis", label: "Bien confié", icon: Package },
     { href: "/rdv", label: "RDV", icon: CalendarClock },
+    {
+      href: "/messages",
+      label: "Messagerie",
+      icon: MessageSquare,
+      badge: unreadMsgs,
+    },
     {
       href: "/propositions",
       label: "Améliorations",
