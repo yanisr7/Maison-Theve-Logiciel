@@ -13,6 +13,7 @@ import type { Transit } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function TransitDetailPage({
@@ -46,8 +47,16 @@ export default function TransitDetailPage({
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-        Chargement…
+      <div className="space-y-6">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-40 w-full rounded-2xl" />
+        <div className="grid gap-6 md:grid-cols-3">
+          <div className="space-y-6 md:col-span-2">
+            <Skeleton className="h-32 w-full rounded-2xl" />
+            <Skeleton className="h-48 w-full rounded-2xl" />
+          </div>
+          <Skeleton className="h-56 w-full rounded-2xl" />
+        </div>
       </div>
     );
   }
@@ -211,11 +220,11 @@ export default function TransitDetailPage({
     !showPietroVerify;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Link
           href="/transit"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[var(--gold)]"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-[var(--gold)]"
         >
           <ArrowLeft className="size-4" />
           Tous les transits
@@ -226,88 +235,100 @@ export default function TransitDetailPage({
         </span>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
-                Bon de transit
-              </p>
-              <h1 className="mt-1 font-serif text-4xl text-foreground">
-                {transit.reference}
-              </h1>
-              <p className="mt-2 flex flex-wrap items-center gap-1.5 text-muted-foreground">
-                <span className="text-foreground">{fromAgency.name}</span>
-                <ArrowRight className="size-3.5" aria-hidden />
-                <span className="text-foreground">{toAgency.name}</span>
-                <span className="mx-1">·</span>
-                {transit.transporter}
-                <span className="mx-1">·</span>
-                Créé le {formatDateTime(transit.createdAt)}
-                {transit.createdBy && (
-                  <>
-                    <span className="mx-1">·</span>
-                    Émis par{" "}
-                    <span className="text-foreground">{transit.createdBy}</span>
-                  </>
-                )}
-              </p>
+      {/* En-tête */}
+      <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-6 p-6">
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[var(--gold)]">
+              Bon de transit
+            </p>
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-foreground">
+              {transit.reference}
+            </h1>
+            <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-3 py-1.5 text-sm">
+              <span className="font-medium text-foreground">{fromAgency.name}</span>
+              <ArrowRight className="size-3.5 text-[var(--gold)]" aria-hidden />
+              <span className="font-medium text-foreground">{toAgency.name}</span>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              <StatusChip status={transit.status} />
-              <p className="font-serif text-3xl text-[var(--gold)]">
+            <p className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+              <span>{transit.transporter}</span>
+              <span aria-hidden>•</span>
+              <span>Créé le {formatDateTime(transit.createdAt)}</span>
+              {transit.createdBy && (
+                <>
+                  <span aria-hidden>•</span>
+                  <span>
+                    Émis par{" "}
+                    <span className="font-medium text-foreground">
+                      {transit.createdBy}
+                    </span>
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+
+          <div className="flex flex-col items-end gap-3">
+            <StatusChip status={transit.status} />
+            <div className="rounded-xl bg-[var(--gold)]/[0.08] px-4 py-2.5 text-right">
+              <p className="text-3xl font-bold tabular-nums text-[var(--gold)]">
                 {formatAmount(transit.amount)}
               </p>
-              <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
                 Montant facturé
               </p>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {transit.invoiceNumber && (
-            <p className="text-sm">
-              Facture&nbsp;:{" "}
-              <span className="font-medium text-[var(--gold)]">
-                {transit.invoiceNumber}
-              </span>
-            </p>
-          )}
-          {transit.refusalReason && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-              <span className="font-medium">Motif de refus&nbsp;: </span>
-              {transit.refusalReason}
-            </div>
-          )}
-          {transit.status === "paid_unverified" && isPietro && (
-            <div className="rounded-md border border-[var(--gold)] bg-[var(--gold)]/10 px-4 py-3 text-sm text-foreground">
-              <p className="font-medium">Vérification bancaire</p>
-              <p className="mt-1 text-muted-foreground">
-                Contrôler sur le relevé bancaire&nbsp;: montant attendu ={" "}
-                <span className="font-serif text-base text-[var(--gold)]">
-                  {formatAmount(transit.amount)}
+        </div>
+
+        {(transit.invoiceNumber ||
+          transit.refusalReason ||
+          (transit.status === "paid_unverified" && isPietro)) && (
+          <div className="space-y-3 border-t border-border bg-muted/20 p-6">
+            {transit.invoiceNumber && (
+              <p className="text-sm">
+                Facture&nbsp;:{" "}
+                <span className="font-semibold text-[var(--gold)]">
+                  {transit.invoiceNumber}
                 </span>
-                {transit.invoiceNumber && (
-                  <>
-                    {" "}
-                    · réf. facture{" "}
-                    <span className="font-medium text-foreground">
-                      {transit.invoiceNumber}
-                    </span>
-                  </>
-                )}
-                .
               </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+            {transit.refusalReason && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <span className="font-medium">Motif de refus&nbsp;: </span>
+                {transit.refusalReason}
+              </div>
+            )}
+            {transit.status === "paid_unverified" && isPietro && (
+              <div className="rounded-xl border border-[var(--gold)]/40 bg-[var(--gold)]/10 px-4 py-3 text-sm text-foreground">
+                <p className="font-medium">Vérification bancaire</p>
+                <p className="mt-1 text-muted-foreground">
+                  Contrôler sur le relevé bancaire&nbsp;: montant attendu ={" "}
+                  <span className="font-semibold text-[var(--gold)]">
+                    {formatAmount(transit.amount)}
+                  </span>
+                  {transit.invoiceNumber && (
+                    <>
+                      {" "}
+                      · réf. facture{" "}
+                      <span className="font-medium text-foreground">
+                        {transit.invoiceNumber}
+                      </span>
+                    </>
+                  )}
+                  .
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       <section className="grid gap-6 md:grid-cols-3">
         <div className="space-y-6 md:col-span-2">
-          <Card>
+          <Card className="rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="font-serif text-xl">Descriptif</CardTitle>
+              <CardTitle className="text-lg font-semibold">Descriptif</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="whitespace-pre-line text-sm text-foreground">
@@ -316,20 +337,22 @@ export default function TransitDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="font-serif text-xl">Historique</CardTitle>
+              <CardTitle className="text-lg font-semibold">Historique</CardTitle>
             </CardHeader>
             <CardContent>
-              <ol className="space-y-3">
+              <ol className="relative space-y-5 before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-border">
                 {transit.events.map((e, i) => (
-                  <li key={i} className="flex gap-3">
+                  <li key={i} className="relative flex gap-4">
                     <span
-                      className="mt-1.5 inline-block h-2 w-2 shrink-0 rounded-full bg-[var(--gold)]"
+                      className="z-10 mt-1 inline-block size-[11px] shrink-0 rounded-full border-2 border-card bg-[var(--gold)] ring-1 ring-[var(--gold)]/40"
                       aria-hidden
                     />
-                    <div className="flex-1 border-b border-border pb-3 last:border-b-0">
-                      <p className="text-sm text-foreground">{e.label}</p>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-foreground">
+                        {e.label}
+                      </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
                         {formatDateTime(e.date)} · {e.by}
                       </p>
@@ -341,37 +364,49 @@ export default function TransitDetailPage({
           </Card>
         </div>
 
-        <aside className="space-y-4">
-          <Card>
+        <aside className="space-y-6">
+          <Card className="rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="font-serif text-lg">Actions</CardTitle>
+              <CardTitle className="text-base font-semibold">Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {noAction ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="rounded-xl bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
                   Aucune action disponible pour votre rôle au statut actuel.
                 </p>
               ) : (
                 <div className="flex flex-col gap-2">
                   {showValidate && (
-                    <Button onClick={validate}>Valider le bon</Button>
+                    <Button className="w-full" onClick={validate}>
+                      Valider le bon
+                    </Button>
                   )}
                   {showRefuse && (
-                    <Button variant="destructive" onClick={refuse}>
+                    <Button
+                      variant="outline"
+                      className="w-full border-red-200 text-red-700 hover:bg-red-50 hover:text-red-700"
+                      onClick={refuse}
+                    >
                       Refuser
                     </Button>
                   )}
                   {showShip && (
-                    <Button onClick={ship}>Marquer comme expédié</Button>
+                    <Button className="w-full" onClick={ship}>
+                      Marquer comme expédié
+                    </Button>
                   )}
                   {showReceive && (
-                    <Button onClick={receive}>Confirmer réception</Button>
+                    <Button className="w-full" onClick={receive}>
+                      Confirmer réception
+                    </Button>
                   )}
                   {showDeclarePaid && (
-                    <Button onClick={declarePaid}>Facturé + Payé</Button>
+                    <Button className="w-full" onClick={declarePaid}>
+                      Facturé + Payé
+                    </Button>
                   )}
                   {showPietroVerify && (
-                    <Button onClick={pietroVerify}>
+                    <Button className="w-full" onClick={pietroVerify}>
                       Vérifier virement &amp; clôturer
                     </Button>
                   )}
@@ -398,19 +433,23 @@ export default function TransitDetailPage({
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="rounded-2xl shadow-sm">
             <CardHeader>
-              <CardTitle className="text-sm font-medium">Adresses</CardTitle>
+              <CardTitle className="text-base font-semibold">Adresses</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 text-xs text-muted-foreground">
-              <p>
-                <span className="text-foreground">Émetteur&nbsp;:</span>{" "}
-                {fromAgency.address}
-              </p>
-              <p>
-                <span className="text-foreground">Destinataire&nbsp;:</span>{" "}
-                {toAgency.address}
-              </p>
+            <CardContent className="space-y-3 text-sm">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Émetteur
+                </p>
+                <p className="text-foreground">{fromAgency.address}</p>
+              </div>
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                  Destinataire
+                </p>
+                <p className="text-foreground">{toAgency.address}</p>
+              </div>
             </CardContent>
           </Card>
         </aside>
