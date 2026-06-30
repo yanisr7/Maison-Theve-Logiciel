@@ -18,7 +18,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { ArrowRight, Eye, Plus, Truck } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, Plus, Truck } from "lucide-react";
+import { transitNeedsAction } from "@/lib/transit-actions";
 
 const STATUSES: (TransitStatus | "all")[] = [
   "all",
@@ -238,6 +239,7 @@ export default function TransitListPage() {
                   const concernsMe =
                     role.kind === "agency" &&
                     (t.from === role.agencySlug || t.to === role.agencySlug);
+                  const needsAction = transitNeedsAction(t, role);
                   return (
                     <TableRow
                       key={t.id}
@@ -249,14 +251,26 @@ export default function TransitListPage() {
                       <TableCell className="py-4 font-medium">
                         <div className="flex items-center gap-2">
                           <span className="text-foreground">{t.reference}</span>
-                          <Link
-                            href={`/transit/${t.id}`}
-                            aria-label="Aperçu"
-                            title="Aperçu"
-                            className="inline-flex size-6 items-center justify-center rounded border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] transition-colors hover:bg-[var(--gold)]/20"
-                          >
-                            <Eye className="size-3.5" />
-                          </Link>
+                          {needsAction ? (
+                            <Link
+                              href={`/transit/${t.id}`}
+                              aria-label="Action requise"
+                              title="Action requise"
+                              className="inline-flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white transition-colors hover:bg-red-600"
+                            >
+                              <AlertCircle className="size-3" />
+                              Action
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/transit/${t.id}`}
+                              aria-label="Aperçu"
+                              title="Aperçu"
+                              className="inline-flex size-6 items-center justify-center rounded border border-[var(--gold)]/40 bg-[var(--gold)]/10 text-[var(--gold)] transition-colors hover:bg-[var(--gold)]/20"
+                            >
+                              <Eye className="size-3.5" />
+                            </Link>
+                          )}
                         </div>
                       </TableCell>
 

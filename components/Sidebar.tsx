@@ -6,6 +6,8 @@ import { useRole } from "@/lib/role-context";
 import { AGENCIES, agencyBySlug } from "@/lib/mock";
 import { getAllProposals, getProposalsByAgency } from "@/lib/proposals-db";
 import { getUnreadCount } from "@/lib/messages-db";
+import { getAllTransits, getTransitsByAgency } from "@/lib/transits-db";
+import { transitNeedsAction } from "@/lib/transit-actions";
 import type { ParticipantKey } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -93,6 +95,33 @@ export function Sidebar() {
     };
   }, [myKey]);
 
+  // Transits en attente d'une action de ma part (badge rouge).
+  const [transitActions, setTransitActions] = useState(0);
+  const transitScopeKey =
+    role.kind === "agency" ? `agency:${role.agencySlug}` : "admin";
+  useEffect(() => {
+    let active = true;
+    const fetchActions = async () => {
+      try {
+        const list =
+          role.kind === "agency"
+            ? await getTransitsByAgency(role.agencySlug)
+            : await getAllTransits();
+        if (active)
+          setTransitActions(
+            list.filter((t) => transitNeedsAction(t, role)).length
+          );
+      } catch {
+        if (active) setTransitActions(0);
+      }
+    };
+    fetchActions();
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [transitScopeKey]);
+
   const agencyHref =
     role.kind === "agency" ? `/agence/${role.agencySlug}` : "/admin";
 
@@ -100,7 +129,7 @@ export function Sidebar() {
     // Dashboard = contexte effectif : Vue 360° (/admin) si « Toutes les agences »,
     // sinon le dashboard de l'agence affichée (/agence/[slug]).
     { href: agencyHref, label: "Tableau de bord", icon: LayoutDashboard, exact: true },
-    { href: "/transit", label: "Transit", icon: Truck },
+    { href: "/transit", label: "Transit", icon: Truck, badge: transitActions },
     { href: "/colis", label: "Bien confié", icon: Package },
     { href: "/rdv", label: "RDV", icon: CalendarClock },
     {
