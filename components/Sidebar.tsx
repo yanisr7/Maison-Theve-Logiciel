@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useRole } from "@/lib/role-context";
 import { AGENCIES, agencyBySlug } from "@/lib/mock";
+import { getAllProposals, getProposalsByAgency } from "@/lib/proposals-db";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -36,6 +38,7 @@ type NavItem = {
   label: string;
   icon: React.ElementType;
   exact?: boolean;
+  badge?: number;
 };
 
 export function Sidebar() {
@@ -43,6 +46,31 @@ export function Sidebar() {
     useRole();
   const pathname = usePathname() ?? "";
   const router = useRouter();
+
+  // Nombre de propositions « nouvelles » (non traitées) → badge rouge.
+  const [newProposals, setNewProposals] = useState(0);
+  const proposalScope =
+    role.kind === "agency" ? role.agencySlug : isPietro ? "__all__" : null;
+  useEffect(() => {
+    let active = true;
+    const fetchCount = async () => {
+      try {
+        const data =
+          proposalScope === "__all__"
+            ? await getAllProposals()
+            : proposalScope
+              ? await getProposalsByAgency(proposalScope)
+              : [];
+        if (active) setNewProposals(data.filter((p) => p.status === "new").length);
+      } catch {
+        if (active) setNewProposals(0);
+      }
+    };
+    fetchCount();
+    return () => {
+      active = false;
+    };
+  }, [proposalScope]);
 
   const agencyHref =
     role.kind === "agency" ? `/agence/${role.agencySlug}` : "/admin";
@@ -54,7 +82,12 @@ export function Sidebar() {
     { href: "/transit", label: "Transit", icon: Truck },
     { href: "/colis", label: "Bien confié", icon: Package },
     { href: "/rdv", label: "RDV", icon: CalendarClock },
-    { href: "/propositions", label: "Améliorations", icon: Lightbulb },
+    {
+      href: "/propositions",
+      label: "Améliorations",
+      icon: Lightbulb,
+      badge: newProposals,
+    },
   ];
   // Sous-pages d'agence : visibles quand un contexte agence est actif
   // (compte agence, ou admin ayant sélectionné une agence via le dropdown).
@@ -108,7 +141,17 @@ export function Sidebar() {
         )}
       >
         <Icon className="size-4 shrink-0" />
-        {l.label}
+        <span className="flex-1">{l.label}</span>
+        {l.badge && l.badge > 0 ? (
+          <span
+            className={cn(
+              "inline-flex h-5 min-w-5 items-center justify-center rounded-full px-1.5 text-[11px] font-semibold",
+              active ? "bg-white text-red-600" : "bg-red-500 text-white"
+            )}
+          >
+            {l.badge}
+          </span>
+        ) : null}
       </Link>
     );
   };
