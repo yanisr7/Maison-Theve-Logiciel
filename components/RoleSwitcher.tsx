@@ -2,6 +2,7 @@
 
 import { useRole } from "@/lib/role-context";
 import type { Role } from "@/lib/types";
+import { AGENCIES } from "@/lib/mock";
 import {
   Select,
   SelectContent,
@@ -11,8 +12,11 @@ import {
 } from "@/components/ui/select";
 
 const ROLES: { value: string; label: string; role: Role }[] = [
-  { value: "gambetta", label: "Gambetta", role: { kind: "agency", agencySlug: "gambetta" } },
-  { value: "federbe", label: "Federbe", role: { kind: "agency", agencySlug: "federbe" } },
+  ...AGENCIES.map((a) => ({
+    value: a.slug,
+    label: a.name,
+    role: { kind: "agency", agencySlug: a.slug } as Role,
+  })),
   { value: "admin", label: "Pietro (Admin)", role: { kind: "admin" } },
 ];
 

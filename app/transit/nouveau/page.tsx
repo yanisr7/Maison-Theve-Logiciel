@@ -3,8 +3,13 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { AGENCIES, createTransit, nextReference } from "@/lib/mock";
-import type { AgencySlug, Transporter } from "@/lib/types";
+import {
+  AGENCIES,
+  createTransit,
+  getProductCatalog,
+  nextReference,
+} from "@/lib/mock";
+import type { AgencySlug, ProductCategory, ProductRef, Transporter } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,9 +24,16 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import { cn, formatAmount } from "@/lib/utils";
 
 const TRANSPORTERS: Transporter[] = ["Thémis", "Elite", "Interne", "Pietro"];
+
+const CATEGORY_LABEL: Record<ProductCategory, string> = {
+  lingot: "Lingots",
+  piece: "Pièces",
+  bijou: "Bijoux",
+  autre: "Autres",
+};
 
 export default function NouveauBonPage() {
   const router = useRouter();
@@ -37,6 +49,29 @@ export default function NouveauBonPage() {
   const [transporter, setTransporter] = useState<Transporter>("Thémis");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState<string>("");
+  const [createdBy, setCreatedBy] = useState("");
+
+  // Référentiel produits, groupé par catégorie pour un affichage lisible.
+  const catalogByCategory = useMemo(() => {
+    const groups = new Map<ProductCategory, ProductRef[]>();
+    for (const p of getProductCatalog()) {
+      const list = groups.get(p.category) ?? [];
+      list.push(p);
+      groups.set(p.category, list);
+    }
+    return [...groups.entries()];
+  }, []);
+
+  function addProduct(p: ProductRef) {
+    // Ajoute le label au descriptif (sur une nouvelle ligne si déjà rempli)
+    setDescription((prev) => (prev.trim() ? `${prev.trim()}\n${p.label}` : p.label));
+    // Ajoute le prix unitaire au montant courant (limite les erreurs de saisie)
+    setAmount((prev) => {
+      const current = Number.parseInt(prev, 10);
+      const base = Number.isFinite(current) && current > 0 ? current : 0;
+      return String(base + p.unitPrice);
+    });
+  }
 
   const previewRef = useMemo(() => nextReference(), []);
   const amountValue = Number.parseInt(amount, 10);
@@ -53,6 +88,7 @@ export default function NouveauBonPage() {
       transporter,
       description: description.trim(),
       amount: amountValue,
+      ...(createdBy.trim() ? { createdBy: createdBy.trim() } : {}),
     });
     toast.success(`Bon ${t.reference} créé`, {
       description: "En attente de validation du destinataire.",
@@ -150,6 +186,40 @@ export default function NouveauBonPage() {
               </div>
             </div>
 
+            <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
+              <div>
+                <Label className="text-foreground">Référentiel produits</Label>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Cliquez un produit pour l&apos;ajouter au descriptif et
+                  incrémenter le montant (évite les erreurs de saisie de prix).
+                </p>
+              </div>
+              <div className="space-y-3">
+                {catalogByCategory.map(([category, products]) => (
+                  <div key={category} className="space-y-1.5">
+                    <p className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                      {CATEGORY_LABEL[category]}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {products.map((p) => (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => addProduct(p)}
+                          className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-foreground transition-colors hover:border-[var(--gold)] hover:bg-[var(--gold)]/10"
+                        >
+                          {p.label}
+                          <span className="ml-1.5 text-[var(--gold)]">
+                            {formatAmount(p.unitPrice)}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="description">Descriptif du contenu</Label>
               <Textarea
@@ -160,8 +230,8 @@ export default function NouveauBonPage() {
                 rows={5}
               />
               <p className="text-xs text-muted-foreground">
-                Saisie libre, pas de catalogue. Soyez précis (poids, titres,
-                quantités).
+                Saisie libre ou via le référentiel ci-dessus. Soyez précis
+                (poids, titres, quantités).
               </p>
             </div>
 
@@ -181,6 +251,19 @@ export default function NouveauBonPage() {
               <p className="text-xs text-muted-foreground">
                 Montant figurant sur la facture, en euros entiers. Utilisé par
                 Pietro pour la vérification bancaire.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="createdBy">Cambiste</Label>
+              <Input
+                id="createdBy"
+                value={createdBy}
+                onChange={(e) => setCreatedBy(e.target.value)}
+                placeholder="Ex : Victor Rico"
+              />
+              <p className="text-xs text-muted-foreground">
+                Nom de la personne qui émet le bon (optionnel).
               </p>
             </div>
 

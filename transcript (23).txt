@@ -1,0 +1,225 @@
+Speaker A: Donc tu peux choisir le transporteur, tu peux mettre le descriptif du contenu. Donc là j'ai mis un descriptif à remplir à la main, mais je peux connecter tous tes produits pour que tu as juste— c'est ça, pour que tu as juste à cliquer, à taper le nom, ça te le remplit automatiquement et ça met le prix, etc. Vraiment un truc automatique.
+
+Speaker B: Pas besoin, pas besoin. Ça, on verra, peut-être que oui.
+
+Speaker A: OK, ça, ça c'est vraiment comme toi tu veux. Mais si tu veux juste un endroit où tu mets un lingot ou tu écris simplement à la main, c'est possible aussi. Voilà, c'est déjà le cas.
+
+Speaker B: Après, j'ai envie de te dire, Yanis, c'est que effectivement, si on a référentiel avec lingot 250 g, 10 g, 5 g, on clique, on a tout, ça nous évite de les remettre.
+
+Speaker A: Ouais, ce serait bien, tu vois. Donc certes, la première fois c'est chiant, Mais après tu dis que finalement tu es tranquille à chaque fois que quelqu'un veut rentrer quelque chose. Il n'y a pas de problème de prix, problème de montant, etc. Et ce qui est bien dans ce type de logiciel c'est toujours de faciliter, au moins on évite la marge d'erreur. Parce qu'un salarié lui son job c'est de remplir une tâche et il y a une erreur, bon c'est pas grave, il a fait une erreur. Mais le fait de limiter le nombre d'erreurs ça permet à toi aussi d'avoir un contrôle total sur ton logiciel. Et surtout que c'est pas très compliqué à mettre en place. Ensuite tu mets le montant, donc voilà tu mets le montant. Et ensuite une fois que le bon est créé, dans transit du coup tu vois le détail des transits. Donc là ce que j'ai fait c'est un peu ce que tu m'avais demandé au niveau du design et au niveau de— ça je vais fermer. Ce que tu m'avais demandé par rapport à Godofis, tu m'as dit que tu voulais une interface qui ressemblait à peu près à ça. Donc là je me suis pas trop pris la tête, J'ai recopié à peu près.
+
+Speaker B: Ouais, c'est bien. Ben écoute, c'est compréhensible. Moi, c'est tout ce qui m'intéresse.
+
+Speaker A: C'est ça. Donc là, t'as la référence, la date de l'émission du bon, le montant. Donc visuellement, déjà, t'as quelque chose de très clair. Et ensuite, t'as le statut. Donc le statut, t'as en attente de validation, validé par le prestataire, pas par le destinataire, t'as réceptionné, clôturé et refusé. Ou en transit, d'accord. En transit, ça veut dire qu'il est actuellement en transit et personne l'a encore réceptionné. Donc au moins tu sais, en cliquant sur le détail, tu sais le descriptif, quand est-ce qu'il a été créé, l'adresse de l'émetteur et l'adresse du destinataire. Et je peux rajouter des détails en disant par exemple est censé arriver à telle date.
+
+Speaker B: C'est bon, ouais, c'est bon. C'est celle que tu as vendue tout à l'heure, la petite vieille. Elle était très, très élégante, cette dame. Ouais, ouais, bien de la clientèle comme ça, agréable. Ouais, dis, tu peux, Yanis, tu peux revenir en arrière juste un truc?
+
+Speaker A: Ouais, dans transit, dans la page transit.
+
+Speaker B: Ouais, transit, transit. Est-ce que, alors là, au premier abord Je sais qu'on est sur l'interface de Gambetta.
+
+Speaker A: C'est ça.
+
+Speaker B: OK. Par contre, il y a un truc que je vois pas, Yannis. C'est c'est un truc qu'on pourrait voir assez flagrant du genre Gambetta vers Feder vers Valenciennes vers Abidjan.
+
+Speaker A: OK. Avec une flèche?
+
+Speaker B: Ouais.
+
+Speaker A: D'accord. Donc Gambetta vers Feder, Gambetta vers C'est quoi du moins un autre nom d'agence par exemple?
+
+Speaker B: Tu vas avoir Le Touquet, Abbeville, Saint-Omer, Dunkerque. OK. Si tu veux je peux te les envoyer toute la liste.
+
+Speaker A: Ouais s'il te plaît, envoie-moi la liste comme ça je les inclurai dans le truc. Et du coup il te faut à côté de date par exemple émetteur récepteur et tu as par exemple Gambetta vers Feder avec une petite flèche entre les deux. C'est ça. OK.
+
+Speaker B: Et quand on est sur l'interface de Feder c'est la même histoire. Fédéral vers Gambetta, quand on va sur Dunkerque vers Gambetta.
+
+Speaker A: OK, OK, ouais, ça se, ça se met à jour nativement en fonction de la personne qui est connectée, enfin de l'agence qui est connectée. OK, OK, parfait.
+
+Speaker B: Comme ça, tu as le statut envoyé, le mec qui reçoit il va sur sa plateforme, il fait réceptionner, traiter, OK, validé.
+
+Speaker A: OK, ça marche.
+
+Speaker B: Et on a le nom, le nom d'administrateur, on aura un code utilisateur pour chaque personne.
+
+Speaker A: Ça marche.
+
+Speaker B: Donc le code utilisateur, ça sera le nom et le prénom, comme ça on sait exactement c'est qui.
+
+Speaker A: D'accord, ok. Donc en fait tu sais qui a créé, parce que je, dans notre historique, j'ai regardé tout à l'heure en plus, parce que quand je regardais le détail des transits, c'est écrit émetteur et destinataire. Donc émetteur c'est toujours l'agence et destinataire c'est toujours l'agence aussi. Et je me, et je me, donc quand j'ai regardé dans notre conversation, je t'avais demandé si tu voulais le nom de la personne qui avait qui avait émis le bon et tu m'avais dit non, mais finalement en fait tu veux quand même, tu veux quand même qu'il y ait le nom.
+
+Speaker B: D'accord, ok, je veux quand même le nom. D'accord, après je, sur le bon, sur le bon, nous en interne on a le nom des cambistes, donc si c'est Victor Rico qui envoie un truc, il va être sur le bon Victor Rico, mais que je veux que chaque personne qui se connecte à son admin, à son intranet, il est ses codes propres à lui.
+
+Speaker A: D'accord, donc quand il crée le bon, à chaque fois c'est en fonction de son nom à lui. Exactement. Ok, parfait, parfait, nickel. Bah tu réponds à ma, une des questions que j'avais notées parce que justement tout à l'heure je me posais cette question-là et quand je regardais dans notre conversation, parce que tu te rappelles j'ai tout enregistré, et je t'avais posé cette question-là, tu m'avais dit bah non, pour un premier jet pour l'instant on fait émetteur destinataire. Mais pas de souci, je le rajouterai, c'est pas, c'est C'est pas compliqué, donc ça pas de souci. OK, donc là on est bon sur cette partie-là. Et là ce qui est bien c'est que tu as un historique aussi, donc quand est-ce que le bon a été créé, quand est-ce qu'il a été validé, quand est-ce qu'il a été expédié, réceptionné.
+
+Speaker B: Enfin pour chaque truc, ouais, pour chaque truc, c'est ça, c'est ça. Yanis, autre chose, tout ce qui a été envoyé Est-ce que c'est quelque chose qu'on va pouvoir conserver tout le temps? Au bout d'un moment, les données vont être écrasées?
+
+Speaker A: Jamais écrasées. Moi, ce que je vais créer, c'est ce qui n'est pas encore fait parce que là, c'est une maquette. Ce que je vais créer, c'est une base de données, d'accord? Une base de données qui sera à toi et à personne d'autre. Donc cette base de données-là, elle est très grosse. Tu peux mettre des centaines, des dizaines de milliers de transits sans qu'il n'y ait aucun problème. Je crois que la base de données au final ça coûtait un truc du genre 20 € ou 25 € par mois. Et c'est, tu as limite données illimitées dedans, tu vois, c'est très large. Donc ça tu n'auras pas de problème. En plus il y a même des sauvegardes qui sont automatiquement au cas où il y a un bug un jour. Tu sais dans l'informatique des fois ça peut arriver. Mais ouais, donc du coup voilà pour ce côté-là.
+
+Speaker B: OK, vas-y je te laisse finir.
+
+Speaker A: Ensuite on avait un côté colis. Tu m'avais expliqué qu'il y a des colis qui sont envoyés. Il y a des colis qui sont envoyés et du coup ces colis en question, alors quand on clique sur le colis on a le nom du client, son adresse mail. Tu sais des fois tu m'avais dit qu'il y avait une sorte de point relais, je ne sais pas si tu te rappelles. Tu m'avais dit qu'en gros Par moment, il y a des personnes qui veulent commander un bijou, ils le réceptionnent en agence et vous livrez au client. Tu te rappelles de cet aspect-là dont tu m'avais parlé?
+
+Speaker B: En fait, non. Ce qu'on fait, c'est qu'on fait des transferts interagences. Les transferts interagences, c'est-à-dire qu'on envoie un bijou, admettons de Valenciennes à Arras.
+
+Speaker A: Ouais.
+
+Speaker B: Le bijou, ce bijou-là en question, ben il est Il est essayé et puis si ça convient, bon, on fait la vente. Si ça convient pas, on renvoie directement à Valenciennes.
+
+Speaker A: OK, il est essayé par le client. Par le client, d'accord. Et moi, en fait, ce que j'ai fait du coup, c'est un aspect colis parce que du coup c'est différent, si je dis pas de bêtises, c'est différent de transit cette partie-là.
+
+Speaker B: Alors tu sais ce qu'on peut l'appeler? On peut l'appeler bien confié.
+
+Speaker A: OK. Donc colis, on va l'appeler bien confié. Mais OK. Donc dans cette partie bien confié, on envoie par exemple un collier— j'en sais rien— ou des Napoléons à l'agence de Faidherbe. Donc bien sûr, il y a ce côté client. Donc c'est pour quel client? C'est quoi son adresse mail? C'est quoi son numéro de téléphone? Comme ça, même quand Faidherbe reçoit le colis, ils peuvent contacter directement le client. Tout est centralisé. Il n'y a pas à demander à l'agence le numéro du client, ce qu'il voulait, etc., etc. Donc une fois que l'agence a réceptionné le colis, elle clique ici sur Réceptionner. Donc comme tu vois, c'est écrit email envoyé à Camille Lefebvre, donc la cliente. Donc la cliente reçoit un email car l'agence a cliqué sur Réceptionner. Ça veut dire que l'agence a dit qu'elle a bien réceptionné le bijou. Voilà, le bijou. La cliente a été informée en un clic.
+
+Speaker B: Alors la cliente, c'est-à-dire notre client potentiel?
+
+Speaker A: Ouais, la cliente potentielle. Ouais, parce que quand elle est passée en agence, peut-être que ta commerciale elle a dit écoute, je l'ai pas sur place, mais je vais t'informer directement par mail ou par téléphone quand je reçois le bijou que tu veux tester. Donc du coup, la cliente est directement informée par email. Donc ce qui est cool, c'est que juste en cliquant sur réceptionner, donc c'est-à-dire que toi, non seulement tu sais instantanément qu'en allant sur ton dashboard, que FEDER a bien réceptionné le colis parce qu'elle a cliqué sur réceptionner. Et en plus de ça, grâce à ce bouton-là, ça envoie un email. Donc c'est pratique, tu vois.
+
+Speaker B: Mais alors, à quel moment tu rentres les coordonnées de la cliente, le numéro de téléphone?
+
+Speaker A: Au moment de l'envoi du colis. Parce que du coup, quand tu envoies le colis, tu dois informer le dashboard. OK, tu dois informer le dashboard.
+
+Speaker B: OK, j'ai compris. Donc ça, OK, c'est ça.
+
+Speaker A: Donc quand tu envoies un colis, tu dis écoutez Faidherbe, je vais dans le dashboard, je crée un colis. Quand vous réceptionnez, vous cliquez juste sur réceptionner, c'est très simple. Comme ça, vous avez les informations du client. Pietro, il sait ce qui est envoyé, ce qui est rentré, ce qui est sorti. Et au moins, tout est centralisé. Même à la fin, si tu veux faire un bilan de ce qui est envoyé, ce qui est reçu, ce qui est en transit, ce qui n'est pas en transit, tu sais tout. Et ce qui est cool, c'est que moi, comme je t'ai dit, je vais t'intégrer un petit chat juste à toi dans lequel tu peux lui dire, dis-moi, il y a combien en montant actuellement qui est en transit? Dis-moi qui a envoyé quoi? Le mois dernier, qu'est-ce qui s'est passé? Et comme l'IA est connectée à toutes tes données, elle va te répondre en temps réel par rapport à toutes tes données sans que toi tu aies obligé d'aller sur le dashboard. Rechercher, trier, etc. Tu vois.
+
+Speaker B: OK, c'est cool, c'est cool.
+
+Speaker A: Donc c'est juste un petit truc entre guillemets pratique, mais c'est les logiciels de demain, tu vois. Le but c'est de se mettre à jour directement, au moins tu as un logiciel qui va être évolutif et qui sera toujours au goût du jour.
+
+Speaker B: Donc pendant que j'y pense aussi, Yanis, je te disais il faut que ça soit évolutif, je veux aussi que sur chaque agence Lorsqu'admettons on va cliquer sur l'agence de Gambetta, on ait le nom des personnes qui travaillent d'abord.
+
+Speaker A: D'accord.
+
+Speaker B: Victor Eco, numéro de téléphone, Arthur Petroschin, numéro de téléphone, mail.
+
+Speaker A: OK, d'accord. Parce que ce que je vais faire, c'est qu'en haut là, je vais créer une page agence sur laquelle tu pourras cliquer sur chaque agence et tu as par exemple salarié, adresse, documents si besoin. D'ailleurs En parlant de documents, je vais te montrer ça. Ça, c'est quelque chose que tu vas aimer. J'ai créé une section documents légaux dans laquelle tu peux cliquer ici, voir les attestations d'assurance, déclaration d'existence, le KBIS, CNI dirigeant, enfin des documents qui sont importants pour toi et qui doivent être toujours disponibles pour, je sais pas, tes commerciaux, tes dirigeants d'agence, etc. Tu vois.
+
+Speaker B: D'accord. Donc ça, est-ce que tu vas me créer, alors là pour le moment on est on est dans une page, mais est-ce que tu vas me créer sur la gauche des espèces d'onglets avec documents administratifs, tu vois toutes les sections?
+
+Speaker A: Exactement, bah ça faut juste que tu me dises toutes les sections dont tu as besoin. Donc soit on fait le point là à la fin de l'appel, soit tu te mets toi au clair directement tout seul et tu m'envoies un point. Mais c'est comme tu veux toi, c'est vraiment sur le site, s'il y a pas beaucoup de choses, si tu as tout déjà en tête Moi je peux déjà noter, je peux déjà noter, et au prochain rendez-vous tu auras tout sur la page.
+
+Speaker B: Ouais, alors comme je t'avais dit, que je puisse consulter en ligne pour chaque agence les états, les états de chaque agence sur l'entretien, que ça soit sur les menuiseries, les peintures, l'électricité. Ensuite je voudrais aussi lui mettre les registres de sécurité dedans. Intégrer le registre de sécurité sur les passages, à quel moment ils sont venus. Je voudrais aussi intégrer les visites médicales, le compte-rendu des visites médicales pour chaque salarié.
+
+Speaker A: OK.
+
+Speaker B: En fait, ce dashboard-là, il est vraiment propre à toutes nos obligations légales réglementaires du travail en entreprise. Donc ça va être la visite périodique des extincteurs, la visite périodique de la médecine du travail, l'état général de l'entreprise, la tenue, l'état général de l'agence. Tout ça, je vais te le faire, je vais te réécrire et je vais t'envoyer cette liste-là. OK, tout ce qui me semble plus juste.
+
+Speaker A: Parfait, parfait. Donc ça, je pense que c'est un onglet qui est très important.
+
+Speaker B: Donc ne t'en fais pas, Yanis, aussi j'y pense parce que ça vient de me faire un flash et c'est super important. OK, lorsque tu rentres dans l'entreprise On a besoin de casier judiciaire B2. OK, donc le casier judiciaire, je le voudrais tous les ans à chaque personne.
+
+Speaker A: OK, le casier judiciaire chaque année par personne. OK, ça marche, pas de souci. Alors attends, ça je le mets ici. Voilà, parfait. OK. Ensuite, ensuite, ensuite, ce qui est bien c'est que sur ton dashboard général, dis-toi que là on est sur une version plus fonctionnelle que design. Et comme tu peux le voir, on est déjà sur quelque chose qui est, je vais pas dire beau, mais qui ressemble à quelque chose. C'est pas encore très clair, très design, mais on commence à se rapprocher de quelque chose. Là j'avais créé un onglet équipe, donc dans laquelle tu peux voir qui est absent aujourd'hui, pourquoi, donc Donc ça veut dire que toi, en juste en faisant ça, sur ta page d'accueil, tu peux voir tes transits en cours, tes colis, des rendez-vous du jour. Peut-être que, je sais pas, des fois tu as des rendez-vous qui sont prévus avec des clients, tu peux savoir pourquoi. Donc ça veut dire que tu as un commercial qui a prévu un rendez-vous pour un bijou.
+
+Speaker B: Alors ça, on l'a déjà sur une autre appli.
+
+Speaker A: OK, si tu veux, je le retire.
+
+Speaker B: Donc tu peux le laisser. Parce que tu l'as créé, donc l'interface elle est là, on sait jamais. Et ça, ça, ce que tu es en train de me faire pour Gormeta, tu vas me le faire ultérieurement aussi pour Maison Tev.
+
+Speaker A: OK, ce qui est cool, c'est que quand tu fais ça, comme c'est moi qui possède le code source et qui fait le truc, le fait de te le faire pour Maison Tev, ce sera beaucoup plus facile. Mais oui, mais évidemment, tu vois, ça veut dire qu'en fait le le fait d'avoir toi-même ton propre logiciel codé par toi-même, tu t'imagines même pas à quel point c'est trop bien en termes d'ergonomie. Parce que là, tu as peut-être un logiciel Go2Office, etc., j'en sais rien, mais pour le modifier, c'est une galère. Il faut passer par le siège, faut leur demander des trucs, etc., etc. C'est une galère pas possible. Là, le fait d'avoir ton propre logiciel, non seulement tes besoins ils sont sur mesure, tu vas pouvoir tout gérer intégrer toutes les dernières choses. Chaque mois, si tu veux faire des modifications, tu peux les faire. Et c'est une vitesse d'exécution qui est sans précédent. C'est-à-dire qu'aujourd'hui, il n'y a personne qui te propose de modifier ton logiciel tous les mois, etc. Il faut des équipes de dev, c'est impossible. Et là, ce qui est bien, c'est que tu pourras modifier sur mesure chaque mois en possédant ton propre code source. Aujourd'hui, tu as des solutions qui existent, Mais c'est des solutions qui vont te vendre un forfait à 500, 1500 € par mois, 1500 € par agence, etc. Tu vois, c'est pas intéressant parce qu'au final t'es même pas propriétaire. OK, et là le but c'est que tu sois propriétaire de ton logiciel, de ton code, et que si demain tu veux récupérer ça pour le mettre sur Maison Tev, tu peux. Ça va pas te prendre 6 mois de le refaire pour Maison Tev parce que tu l'as, c'est ton logiciel, il t'appartient.
+
+Speaker B: Ouais, d'accord, d'accord, d'accord, d'accord.
+
+Speaker A: Donc ça Ensuite j'ai mis un aspect observation, donc observation c'était plus un côté salarial dans le sens où des fois je sais pas peut-être il y a eu un fait divers dans l'agence, je sais pas il y a un extincteur qui a explosé, il y a un bout de carrelage qui a été cassé, on le met dans observation comme ça toi s'il y a une priorité, s'il y a un truc qui s'est passé, je sais pas on manque de stock de pochons, manque de ça. Tu sais en un coup d'œil qui est absent, que tu es en rupture de stock de pochons, tes salariés t'ont informé. Donc toi, le soir, tu passes 15 minutes sur ton logiciel, tu sais tout.
+
+Speaker B: C'est bien, c'est nickel, tu sais tout, très bien, c'est super. Ensuite, tu peux aussi créer une section ou bien un onglet, c'est comment dire, cas de figure, cas de figure ressenti ou cas concret, genre attention, un client vient avec des fausses devises, un client il vient avec des fausses, de faux billets, un client type typologie comme ça, une case qui va relier le, comment dire, le, l'expérience qu'on a vécu dans une agence.
+
+Speaker A: Ok, ok, ok, ça marche, ça marche. Ok pour ça, là globalement on en est à peu près là pour la maquette. Donc comme tu l'as remarqué, on n'est pas encore très développé et on peut se faire des points toutes les semaines pour faire évoluer le truc et le mettre en ligne le plus rapidement possible. Maintenant on va passer aspect roadmap, comment on met en place, tarif, parce que finalement ça a un prix, donc combien ça coûte et comment on va mettre en place une organisation de travail qui va faire que très rapidement tu vas avoir des résultats avec des coûts qui sont sans équivalent. En gros, je t'explique comment ça se passe dans le domaine du logiciel. Là, actuellement, on travaille sur un— nous, on a travaillé ensemble sur un site internet. Un site internet, ça n'a rien à voir avec ce qu'on fait là. Là, ce qu'on fait, c'est du sur-mesure, c'est du logiciel. Il n'y a pas de modèle qui existe, tu vois. La raison pour laquelle, par exemple, ton site, c'est différent, c'est que je peux prendre certains modules, les intégrer, faire des intégrations rapides, etc. On est sur quelque chose de sur mesure. Je vais faire plein de points avec toi. Il n'y a pas de module qui existe préfait comme ça. Donc là, on va tout faire sur mesure, ligne par ligne, code par code, et à la fin, tu auras un logiciel qui t'appartient. Le prix de tout ça, normalement, tu passes par une agence de développement, tu passes par une agence, tu as des équipes qui travaillent, qui te font des points réguliers toutes les semaines, et tu en as pour entre 30 000 et 50 000 € pour être propriétaire du code, pour être propriétaire du code. Là, moi, c'est pas vers ces prix-là que je veux aller, dans le sens où je sais qu'on va travailler ensemble sur le long terme et je sais que ton logiciel, il va toujours évoluer, tu vois. Je sais que la rapidité d'exécution, je pense tu vas être surpris à quel point on peut aller vite ensemble. Et je sais que tu aimes bien aussi mon efficacité et mon honnêteté sur pas mal de pas mal d'aspects professionnels. Moi je me suis dit, soit je lui dis écoute Pietro, je te fais un forfait par agence à 500 € ou des trucs comme font tous les logiciels, mais c'est pas intéressant pour toi parce que tu seras jamais propriétaire. Le but c'est que ton code t'appartienne. Donc je me suis dit, soit je lui dis un prix, je lui dis écoute Pietro, je te facture un truc entre 15 et 20 000 € et après si tu as des modifications à faire ce sera surfacturé. Ou soit je lui dis simplement, Pietro, regarde, actuellement on a un forfait à 1500 € sur le site, je te fais un forfait équivalent et tous les mois on évolue. Et quand tu veux arrêter, c'est-à-dire que tu me dis, ben écoute Yanis, là mon logiciel, moi ça me va pour l'instant, je pense qu'on peut stopper. Et au final, une fois que ton logiciel est prêt et finalisé, Ça t'appartiendra et ce sera finalement ta propriété, tu vois.
+
+Speaker B: Non, l'option 1000, c'est un mot. Ce que je veux, c'est que c'est un logiciel comme tu viens de me faire là aujourd'hui. Je suis propriétaire. Yannis, s'il y a des modifications à faire, je t'appelle. Yannis, j'ai ça comme modif.
+
+Speaker A: Exactement.
+
+Speaker B: Ça coûte autant au final.
+
+Speaker A: Exactement.
+
+Speaker B: Ensuite, au niveau tarif, tu me fais peur. Tu m'annonces des 15-20 000 € pour un truc comme ça. Mais ça coûte pas 15 millions pour faire un site internet. Tu passes plus de temps à faire un site internet que faire ce genre de truc.
+
+Speaker A: Non, actuellement, ce type de logiciel, c'est plus dur qu'un site internet. Ouais, c'est largement plus dur. Là, en termes de complexité, on est à 2-3 fois la difficulté d'un site internet parce qu'en fait, là, tu as un intranet, tu as un intranet sur mesure, tu as une base de données, tu as de la construction de modules. Là vraiment, ce que tu construis, c'est peut-être parce que tu as, je sais pas si tu as déjà construit un logiciel, mais là c'est au-dessus d'un site internet, vraiment.
+
+Speaker B: Mais attends, c'est combien d'heures pour une conception comme ça?
+
+Speaker A: Je saurais pas te chiffrer ça en termes d'heures parce qu'en fait il y a énormément de travail. Là, ce que je te montre, c'est une maquette.
+
+Speaker B: Si ça te plaît, moi ça me plaît, oui, mais ça me plaît, c'est bien, c'est professionnel, c'est nickel, c'est l'outil dont on va avoir besoin. Je pense pas qu'on arrive dans des sphères comme ça, entre 15 et 20 000 € pour un outil de travail juste pour ça. Tu comprends? Que tu me dises que tu es passé 2 mois de boulot dessus, ok, je comprends, ça se paye, ça vaut, ça vaut 5-6 000, tu as le mec qui a passé 2 mois dessus.
+
+Speaker A: Et là, tu vas pas passer 6 mois dessus pour rédiger ça quand même. Ben justement, c'est pour ça que moi, quand je t'ai dit, en fait, je crois que c'est parce que tu as pas compris la solution que je t'ai proposée. Moi, ce que je t'ai proposé, je t'ai dit écoute, ce qu'on fait, c'est que plutôt que de te chiffrer ça comme une prestation de développeur, parce que c'est ce que font les développeurs en te chiffrant 15, 20 000, 30 000, etc. Moi, c'est pas ce que je veux faire. Moi, ce que je veux faire, c'est avancer avec toi chaque semaine. Donc on se fait des points réguliers, etc. On voit comment on avance. Je te fais un forfait, donc un forfait, tu restes propriétaire du code, donc c'est toi le propriétaire du code. Un forfait équivalent à celui qu'on a avec Maison Terre. Et toi, en fonction de l'avancement, etc., tu diras bon bah là c'est bon, là j'ai ce qu'il me faut, et on peut stopper le forfait, tu vois. Et tu restes propriétaire de ton logiciel. Et dès que tu veux modifier des choses sur ton logiciel, bah tu reprends entre guillemets.
+
+Speaker B: Je comprends mieux. Alors ce forfait-là Ce forfait-là, si tu le commences aujourd'hui, à ton avis, pour que ça soit abouti, c'est combien de mois?
+
+Speaker A: Moi personnellement, avec la vitesse, parce qu'en fait j'avance beaucoup plus vite que la norme quand on va chercher des développeurs ou des gens en général, je pense que déjà en un mois, un mois et demi, tu as déjà ta base de données, tu as déjà une base simple et solide. Et tu peux déjà commencer à travailler sur le logiciel en un mois et demi. Bon, si je vois 2 mois, c'est, c'est large, c'est pour être sûr qu'on est OK. Mais en un mois, un mois et demi, on a, en travaillant vraiment beaucoup sur le truc, on a quelque chose de solide sur lequel on peut bosser.
+
+Speaker B: D'accord, mais moi ça me va. Tu sais quoi, on se donne 3 mois, on se donne 3 mois. Par contre, ce qu'il faut faire, Yanis, c'est qu'il faut pas que tu tardes pour envoyer tes factures.
+
+Speaker A: Ouais, c'est vrai, c'est vrai.
+
+Speaker B: Il faut vraiment pas tarder.
+
+Speaker A: Parce que je vais faire, ce que je vais faire, c'est que je vais faire un système qui te les envoie en automatique. Sinon, manuellement, ouais, je vais tout le temps oublier sinon.
+
+Speaker B: Je pense. Puis même pour tout le monde, pour toi, pour moi, pour la gestion, c'est plus simple.
+
+Speaker A: OK, OK, ça marche. Donc ça, je mettrai ça en place je pense ce week-end, comme ça je t'envoie toutes les factures en temps et en heure.
+
+Speaker B: Et génial. Mais si, voilà, c'est pareil là, je suis d'accord, c'est normal. Tout de suite, les bâches que tu as fait, tu m'envoies tout de suite ta facture. Tu continues le développement, ça dure 2, 3, 4 mois, ça dure le temps, pas de problème.
+
+Speaker A: Là c'est OK, c'est très bien. Exactement. Et en fait ce qui est bien, et c'est ce que je propose toujours parce que j'aime pas proposer des choses qui sont pas honnêtes, des tarifs où tu peux te dire bon c'est un peu mirobolant. Là je me suis dit je vais lui proposer un forfait et c'est instinctivement tu vas dire mais en fait c'est trop bien, je suis propriétaire de mon code, j'arrête quand je veux et j'ai quelqu'un qui peut modifier tout le temps mon truc.
+
+Speaker B: Ouais c'est génial, tu vois.
+
+Speaker A: Donc là en fait tu es sur quelque chose qui est— en fait personne propose ça normalement. Normalement, en fait, à 1500 €, tu n'es pas propriétaire du code et on te donne une solution qui n'est pas modifiable. Tu vois? Et moi, ce n'est pas mon intérêt. Moi, comme je t'ai dit, mon intérêt, c'est de travailler avec toi sur le long terme. Je mets mes compétences, ma qualité, etc., au service de tes projets et je serais content de voir que tu utilises un logiciel qui fonctionne pour toi avec un forfait qui est honnête, qui n'est pas surévalué parce que ça n'a aucun intérêt pour moi de surévaluer un forfait. Et je pense qu'à ce tarif-là, c'est pas délirant.
+
+Speaker B: Non, c'est honnête.
+
+Speaker A: C'est ça. Donc je me suis dit que c'est ce qu'il y a de plus raisonnable. Et même pour toi en termes de sécurité, là tu t'engages dans un gros projet. Poser des grosses sommes sur des trucs où t'es pas trop sûr, t'as pas encore de visibilité, c'est pas ce qu'il y a de plus safe. Donc ouais, moi ce projet comme tu l'as vu, j'aime bien. Je prends du plaisir en plus à faire ça et je pense que ce que tu vas construire, parce que là tu es pas trop conscient encore de ce que tu fais, je pense que—
+
+Speaker B: est-ce que tu veux que je te file des codes d'accès d'un intranet qu'on a? Ouais, je veux bien jeter un œil comme ça tu vas voir ce que Godou il peut proposer en termes de, en termes de, comment dire, de traçabilité, de consignation sur le logiciel. Sur plein plein de choses.
+
+Speaker A: OK, d'accord. Ouais ouais, pas de souci.
+
+Speaker B: Je t'enverrai les codes.
+
+Speaker A: Pas de souci, tu m'envoies les codes, tu m'envoies ça en même temps. Et tu sais quoi, envoie-moi les codes en même temps que le point que tu dois me faire pour les documents. Ouais, comme ça moi je mets tout dedans. De toute manière, même avant que tu m'envoies ça, moi j'ai déjà de quoi bosser. C'est-à-dire que là, ce que je t'ai montré, je vais le mettre en forme sur une vraie maquette dans laquelle toi tu peux te connecter. Comme ça je te dirai bon écoute tes identifiants admin c'est ça connecte-toi regarde tout ce qu'il y a tu fais parce que toi je sais que tu aimes bien prendre un papier écrire tu t'écris tout ce qui va pas ou tout ce qui va on se fait des points réguliers toutes les semaines et pendant ce point là moi je récupère tout ce que tu as besoin etc etc mais déjà mais déjà tu sais quoi là c'est c'est déjà bien avancé quoi moi je pense que il faudrait que tu puisses me donner une, tu puisses me faire un mode hors ligne, que on fasse le test entre deux agences, tu vois, pour essayer, pour voir comment ça fonctionne.
+
+Speaker B: OK, je vais recueillir les avis des collaborateurs.
+
+Speaker A: OK, OK, ça marche. Là, comme je t'ai dit, c'est une maquette, une maquette qui est, enfin, j'ai mis en forme tes idées. C'est par exemple l'aspect envoi de mail, il est pas créé vraiment, c'est Voilà, et du coup là comme je t'ai dit juste sur ça j'ai de quoi bosser moi le temps que toi tu fasses tes points, le temps que tu me dises tes trucs de documents. Donc moi j'ai vraiment de quoi avancer, je peux m'y mettre à partir de, comme je t'ai dit, à partir de ce week-end je vais commencer à travailler dessus. Et faudrait juste que je pense soit on se fixe toutes les semaines en disant bah écoute moi je suis disponible tel jour, je suis disponible tel jour, ou soit hebdomadaire on se fixe un point à chaque fois à la même heure le même jour. C'est comme tu veux toi, moi je m'adapte de toute manière ça me dérange pas.
+
+Speaker B: Là ça va être chaud, il y a c'est là ce qu'il faut, c'est genre tu me chopes par coup de ventre, tu m'envoies un message, tu es dispo. Je crois que c'est le mieux de tout. Ça va être compliqué là, ça va être chaud pour moi.
+
+Speaker A: OK, parfait. Moi c'est simple, j'ai besoin d'entre 30 minutes et 1 heure à chaque fois. Et juste cette heure-là, elle permet de faire tellement un gros point que tu verras, ça va avancer très vite.
+
+Speaker B: OK, ouais, OK. Et j'insiste pour te donner les codes parce que vraiment ça va te donner notre vision aussi de la gestion de leur internet.
+
+Speaker A: OK, parfait, nickel.
+
+Speaker B: Bah écoute, envoie-moi ta première facture Yanis.
+
+Speaker A: OK, pas de souci.
+
+Speaker B: Donc pour moi, la facture au nom de Godot et fils, Godot et fils, Godot et fils, et puis tu mets ton montant de 1500 € et moi je vais te payer tout de suite.
+
+Speaker A: Nickel, parfait. Bah écoute, moi je commence à travailler dessus ce week-end Je vais te créer ton mode, c'est pas un mode hors ligne mais c'est un mode caché, tu vois c'est un mode caché du web où toi tu peux y accéder mais personne d'autre avec tes accès, d'accord? Donc je te ferai ça avec ta base de données, ton logiciel perso et toi le truc que tu auras à faire c'est juste aller sur le logiciel, prendre tes notes et on se fait un point par semaine et c'est tout, entre 30 minutes et 1 heure et ça va évoluer comme tu Comme tu veux.
+
+Speaker B: Allez, ben je te remercie, c'est bien, je suis content, c'est très très bien.
+
+Speaker A: Nickel, parfait.
+
+Speaker B: Merci, au top, comme d'habitude.
+
+Speaker A: C'est ça. Bah écoute, j'attends ton retour, moi j'avance sur ça, et dès que j'ai plus de— enfin dès que j'ai avancé un peu plus, je t'envoie un message avec tes codes d'accès. C'est bon?
+
+Speaker B: D'accord, c'est nickel, merci. Allez, merci.
+
+Speaker A: Allez, salut.
+
+Speaker B: Suivez!
+
+Speaker A: Parfait! On a beaucoup d'énergie, d'énergie, d'énergie.
+
+Speaker B: Nickel!
+
+Speaker A: Ça vaut la peine de faire ce tour, ça vaut la peine de y aller.

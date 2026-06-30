@@ -46,23 +46,26 @@ export default function PickupDetailPage({
     role.kind === "agency" && role.agencySlug === pickup.destinationAgencyId;
   const canAct = isDestAgency || isPietro;
 
-  function setStatus(next: PickupStatus, toastMessage: string) {
-    const updated = updatePickupStatus(pickup!.id, next);
+  function handleReceive() {
+    const updated = updatePickupStatus(pickup!.id, "available");
     if (updated) {
       setPickup({ ...updated });
-      toast.success(toastMessage);
+      // Email simulé (aucun envoi réel) — confirmation visuelle pour l'agence
+      toast.success(
+        `Email envoyé à ${pickup!.clientName} (${pickup!.clientEmail})`,
+        {
+          description: `Votre bien confié est arrivé à ${agency.name}. Venez l'essayer sous 48h.`,
+        }
+      );
     }
   }
 
-  function handleReceive() {
-    setStatus(
-      "available",
-      `📧 Email envoyé à ${pickup!.clientEmail} : Votre commande est arrivée à ${agency.name}. Venez la récupérer sous 48h.`
-    );
-  }
-
   function handlePickedUp() {
-    setStatus("picked_up", `Colis remis à ${pickup!.clientName}`);
+    const updated = updatePickupStatus(pickup!.id, "picked_up");
+    if (updated) {
+      setPickup({ ...updated });
+      toast.success(`Bien confié remis à ${pickup!.clientName}`);
+    }
   }
 
   const showReceive = canAct && pickup.status === "incoming";
@@ -79,7 +82,7 @@ export default function PickupDetailPage({
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-[var(--gold)]"
         >
           <ArrowLeft className="size-4" />
-          Tous les colis
+          Tous les biens confiés
         </Link>
         <span className="text-xs text-muted-foreground">
           Connecté en{" "}
@@ -92,7 +95,7 @@ export default function PickupDetailPage({
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
-                Colis point relais
+                Bien confié
               </p>
               <h1 className="mt-1 flex items-center gap-2 font-serif text-4xl text-foreground">
                 <Package className="size-7 text-[var(--gold)]" aria-hidden />
@@ -225,9 +228,9 @@ export default function PickupDetailPage({
 
               <p className="text-xs text-muted-foreground">
                 {pickup.status === "incoming" &&
-                  "Annoncé par Paris — à recevoir physiquement à l'agence."}
+                  "Annoncé par l'agence d'origine — à réceptionner physiquement à l'agence."}
                 {pickup.status === "available" &&
-                  "Disponible en boutique — email envoyé au client (48h)."}
+                  "Disponible en agence — email envoyé au client (essai sous 48h)."}
                 {pickup.status === "picked_up" &&
                   "Remis au client — dossier clôturé."}
               </p>

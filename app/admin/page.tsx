@@ -645,11 +645,10 @@ function NetworkCriticalObservationsSection() {
 
 function NetworkCurrentLeavesSection() {
   const leaves = getCurrentLeavesNetworkWide();
-  const grouped: Record<AgencySlug, typeof leaves> = {
-    gambetta: [],
-    federbe: [],
-  };
-  for (const l of leaves) grouped[l.agencyId].push(l);
+  const grouped = Object.fromEntries(
+    AGENCIES.map((a) => [a.slug, [] as typeof leaves])
+  ) as Record<AgencySlug, typeof leaves>;
+  for (const l of leaves) grouped[l.agencyId]?.push(l);
 
   return (
     <section>

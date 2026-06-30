@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { AgencySlug, Role } from "./types";
+import { AGENCIES } from "./mock";
 
 const STORAGE_KEY = "mtl.role";
 
@@ -54,9 +55,8 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     const roleLabel =
       role.kind === "admin"
         ? "Pietro (Admin)"
-        : role.agencySlug === "gambetta"
-          ? "Gambetta"
-          : "Federbe";
+        : (AGENCIES.find((a) => a.slug === role.agencySlug)?.name ??
+          role.agencySlug);
     return {
       role,
       setRole,

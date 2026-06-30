@@ -16,7 +16,7 @@ export function Nav() {
   const links: { href: string; label: string }[] = [
     { href: agencyHref, label: isPietro ? "Vue 360°" : "Mon agence" },
     { href: "/transit", label: "Transit" },
-    { href: "/colis", label: "Colis" },
+    { href: "/colis", label: "Bien confié" },
     { href: "/rdv", label: "RDV" },
     { href: "/transit/nouveau", label: "Nouveau bon" },
   ];

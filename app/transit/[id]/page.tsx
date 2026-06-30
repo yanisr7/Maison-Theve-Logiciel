@@ -221,6 +221,13 @@ export default function TransitDetailPage({
                 {transit.transporter}
                 <span className="mx-1">·</span>
                 Créé le {formatDateTime(transit.createdAt)}
+                {transit.createdBy && (
+                  <>
+                    <span className="mx-1">·</span>
+                    Émis par{" "}
+                    <span className="text-foreground">{transit.createdBy}</span>
+                  </>
+                )}
               </p>
             </div>
             <div className="flex flex-col items-end gap-2">

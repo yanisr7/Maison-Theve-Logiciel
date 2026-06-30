@@ -1,4 +1,13 @@
-export type AgencySlug = "gambetta" | "federbe";
+export type AgencySlug =
+  | "gambetta"
+  | "federbe"
+  | "le-touquet"
+  | "abbeville"
+  | "saint-omer"
+  | "dunkerque"
+  | "valenciennes"
+  | "arras"
+  | "abidjan";
 
 export type Agency = {
   slug: AgencySlug;
@@ -34,9 +43,22 @@ export type Transit = {
   amount: number; // montant en euros — affiché sur la facture, utilisé par Pietro pour la vérification bancaire
   status: TransitStatus;
   createdAt: string;
+  createdBy?: string; // nom du cambiste qui a émis le bon (ex: "Victor Rico")
   events: TransitEvent[];
   invoiceNumber?: string;
   refusalReason?: string;
+};
+
+// === Référentiel produits / lingots ===
+// Permet de remplir descriptif + montant en un clic à la création d'un bon.
+
+export type ProductCategory = "lingot" | "piece" | "bijou" | "autre";
+
+export type ProductRef = {
+  id: string;
+  label: string; // "Lingot 250 g"
+  category: ProductCategory;
+  unitPrice: number; // prix unitaire indicatif en euros
 };
 
 export type Role =
@@ -106,7 +128,20 @@ export type DocumentStatus =
   | "expired"
   | "missing";
 
-export type DocumentCategory = "kbis" | "declaration" | "id" | "other";
+export type DocumentCategory =
+  | "kbis"
+  | "declaration"
+  | "id"
+  | "assurance" // attestation d'assurance
+  | "entretien" // état de l'agence : menuiserie, peinture, électricité
+  | "securite" // registre de sécurité (passages, contrôles)
+  | "medical" // visites médicales / médecine du travail
+  | "extincteur" // visite périodique des extincteurs
+  | "casier" // casier judiciaire B2 (annuel, par personne)
+  | "other";
+
+// Regroupement des catégories en sections d'onglets (page Documents)
+export type DocumentSection = "administratif" | "etat" | "obligations";
 
 export type LegalDocument = {
   id: string;
@@ -160,4 +195,27 @@ export type Observation = {
   resolvedAt?: string;
   status: ObservationStatus;
   priority: ObservationPriority;
+};
+
+// === Cas de figure (retours d'expérience / alertes terrain) ===
+// Ex: client aux fausses devises, faux billets, typologie de client à surveiller.
+
+export type CasType =
+  | "fausse_monnaie"
+  | "faux_bijou"
+  | "client_suspect"
+  | "tentative_vol"
+  | "autre";
+
+export type CasSeverity = "info" | "warning" | "danger";
+
+export type CasDeFigure = {
+  id: string;
+  agencyId: AgencySlug;
+  type: CasType;
+  title: string;
+  description: string;
+  authorName: string;
+  createdAt: string;
+  severity: CasSeverity;
 };

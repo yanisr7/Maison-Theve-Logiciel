@@ -42,6 +42,11 @@ export function TransitCard({ transit }: { transit: Transit }) {
               <span>Facture {transit.invoiceNumber}</span>
             )}
           </div>
+          {transit.createdBy && (
+            <p className="text-xs text-muted-foreground/80">
+              Émis par {transit.createdBy}
+            </p>
+          )}
         </CardContent>
       </Card>
     </Link>

@@ -53,12 +53,12 @@ export default function ColisListPage() {
           Module
         </p>
         <h1 className="font-serif text-4xl text-foreground">
-          Colis point relais
+          Bien confié
         </h1>
         <p className="mt-1 text-muted-foreground">
           {role.kind === "admin"
-            ? "Tous les colis Paris → réseau Lille."
-            : "Colis destinés à votre agence."}
+            ? "Tous les biens confiés transférés entre agences pour essai client."
+            : "Biens confiés destinés à votre agence."}
         </p>
       </header>
 
@@ -116,7 +116,7 @@ export default function ColisListPage() {
 
       {pickups.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-          Aucun colis correspondant.
+          Aucun bien confié correspondant.
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

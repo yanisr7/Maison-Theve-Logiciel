@@ -3,7 +3,10 @@ import type {
   AgencySlug,
   Appointment,
   AppointmentStatus,
+  CasDeFigure,
+  CasType,
   DocumentCategory,
+  DocumentSection,
   DocumentStatus,
   Employee,
   EmployeeRole,
@@ -15,6 +18,7 @@ import type {
   ObservationStatus,
   Pickup,
   PickupStatus,
+  ProductRef,
   Review,
   Transit,
   TransitStatus,
@@ -32,6 +36,48 @@ export const AGENCIES: Agency[] = [
     name: "Federbe",
     address: "47 rue Faidherbe, 59000 Lille",
     manager: "Karim",
+  },
+  {
+    slug: "le-touquet",
+    name: "Le Touquet",
+    address: "5 rue Saint-Jean, 62520 Le Touquet-Paris-Plage",
+    manager: "Camille",
+  },
+  {
+    slug: "abbeville",
+    name: "Abbeville",
+    address: "18 place du Pilori, 80100 Abbeville",
+    manager: "Damien",
+  },
+  {
+    slug: "saint-omer",
+    name: "Saint-Omer",
+    address: "9 rue des Clouteries, 62500 Saint-Omer",
+    manager: "Nathalie",
+  },
+  {
+    slug: "dunkerque",
+    name: "Dunkerque",
+    address: "22 rue Clemenceau, 59140 Dunkerque",
+    manager: "Patrick",
+  },
+  {
+    slug: "valenciennes",
+    name: "Valenciennes",
+    address: "14 rue de Famars, 59300 Valenciennes",
+    manager: "Élodie",
+  },
+  {
+    slug: "arras",
+    name: "Arras",
+    address: "8 Grand-Place, 62000 Arras",
+    manager: "Romain",
+  },
+  {
+    slug: "abidjan",
+    name: "Abidjan",
+    address: "Plateau, Boulevard de la République, Abidjan (Côte d'Ivoire)",
+    manager: "Yao",
   },
 ];
 
@@ -63,6 +109,7 @@ const initialTransits: Transit[] = [
     amount: 18750,
     status: "pending",
     createdAt: "2026-05-18T09:14:00",
+    createdBy: "Victor Rico",
     events: [
       { date: "2026-05-18T09:14:00", label: "Bon créé", by: "Gambetta" },
     ],
@@ -77,6 +124,7 @@ const initialTransits: Transit[] = [
     amount: 2380,
     status: "validated",
     createdAt: "2026-05-17T15:02:00",
+    createdBy: "Léa Martin",
     events: [
       { date: "2026-05-17T15:02:00", label: "Bon créé", by: "Gambetta" },
       { date: "2026-05-17T16:10:00", label: "Validé par destinataire", by: "Federbe" },
@@ -92,6 +140,7 @@ const initialTransits: Transit[] = [
     amount: 67400,
     status: "received",
     createdAt: "2026-05-14T09:45:00",
+    createdBy: "Victor Rico",
     events: [
       { date: "2026-05-14T09:45:00", label: "Bon créé", by: "Gambetta" },
       { date: "2026-05-14T10:00:00", label: "Validé par destinataire", by: "Federbe" },
@@ -109,6 +158,7 @@ const initialTransits: Transit[] = [
     amount: 92150,
     status: "closed",
     createdAt: "2026-05-02T10:00:00",
+    createdBy: "Sébastien Dubois",
     invoiceNumber: "FA-2026-0398",
     events: [
       { date: "2026-05-02T10:00:00", label: "Bon créé", by: "Gambetta" },
@@ -129,10 +179,43 @@ const initialTransits: Transit[] = [
     amount: 1213,
     status: "refused",
     createdAt: "2026-05-09T13:00:00",
+    createdBy: "Sofia Garcia",
     refusalReason: "Descriptif insuffisant, photo manquante. À refaire avec détails poids/titres.",
     events: [
       { date: "2026-05-09T13:00:00", label: "Bon créé", by: "Federbe" },
       { date: "2026-05-09T14:20:00", label: "Refusé par destinataire", by: "Gambetta" },
+    ],
+  },
+  {
+    id: "t8",
+    reference: "TR-2026-0008",
+    from: "valenciennes",
+    to: "arras",
+    transporter: "Elite",
+    description: "3 lingots 100g + 12 Napoléons 20F",
+    amount: 24600,
+    status: "in_transit",
+    createdAt: "2026-05-19T11:30:00",
+    createdBy: "Romain Delcourt",
+    events: [
+      { date: "2026-05-19T11:30:00", label: "Bon créé", by: "Valenciennes" },
+      { date: "2026-05-19T13:00:00", label: "Validé par destinataire", by: "Arras" },
+      { date: "2026-05-19T16:45:00", label: "Expédié", by: "Valenciennes" },
+    ],
+  },
+  {
+    id: "t9",
+    reference: "TR-2026-0009",
+    from: "le-touquet",
+    to: "gambetta",
+    transporter: "Thémis",
+    description: "Lot souverains GB (15 pièces) + 1 lingot 50g",
+    amount: 8900,
+    status: "pending",
+    createdAt: "2026-05-20T10:05:00",
+    createdBy: "Camille Forestier",
+    events: [
+      { date: "2026-05-20T10:05:00", label: "Bon créé", by: "Le Touquet" },
     ],
   },
 ];
@@ -183,6 +266,37 @@ export function updateTransit(id: string, fn: (t: Transit) => Transit): Transit 
 
 // (Anciennes données équipe/observations stub remplacées par les modules
 // dédiés DOCUMENTS / EMPLOYEES / LEAVES / OBSERVATIONS plus bas.)
+
+// ============================================================
+// Référentiel produits / lingots
+// ============================================================
+// À la création d'un bon, le cambiste peut cliquer un produit du référentiel
+// pour pré-remplir le descriptif et le montant (limite les erreurs de saisie).
+
+export const PRODUCT_CATALOG: ProductRef[] = [
+  { id: "lingot-1kg", label: "Lingot 1 kg", category: "lingot", unitPrice: 92000 },
+  { id: "lingot-500g", label: "Lingot 500 g", category: "lingot", unitPrice: 46000 },
+  { id: "lingot-250g", label: "Lingot 250 g", category: "lingot", unitPrice: 23000 },
+  { id: "lingot-100g", label: "Lingot 100 g", category: "lingot", unitPrice: 9200 },
+  { id: "lingot-50g", label: "Lingot 50 g", category: "lingot", unitPrice: 4600 },
+  { id: "lingot-20g", label: "Lingot 20 g", category: "lingot", unitPrice: 1850 },
+  { id: "lingot-10g", label: "Lingot 10 g", category: "lingot", unitPrice: 930 },
+  { id: "lingot-5g", label: "Lingot 5 g", category: "lingot", unitPrice: 470 },
+  { id: "napoleon-20f", label: "Napoléon 20 F", category: "piece", unitPrice: 480 },
+  { id: "souverain-gb", label: "Souverain GB", category: "piece", unitPrice: 610 },
+  { id: "krugerrand-1oz", label: "Krugerrand 1 oz", category: "piece", unitPrice: 2950 },
+  { id: "vreneli-20chf", label: "Vreneli 20 CHF", category: "piece", unitPrice: 480 },
+  { id: "chaine-18k-g", label: "Chaîne or 18k (au gramme)", category: "bijou", unitPrice: 68 },
+  { id: "alliance-18k", label: "Alliance or 18k", category: "bijou", unitPrice: 320 },
+];
+
+export function getProductCatalog(): ProductRef[] {
+  return PRODUCT_CATALOG;
+}
+
+export function getProduct(id: string): ProductRef | undefined {
+  return PRODUCT_CATALOG.find((p) => p.id === id);
+}
 
 // ============================================================
 // Point Relais Paris → Lille
@@ -489,8 +603,45 @@ export const DOCUMENT_CATEGORY_LABEL: Record<DocumentCategory, string> = {
   kbis: "KBis",
   declaration: "Déclaration",
   id: "Pièce d'identité",
+  assurance: "Attestation d'assurance",
+  entretien: "État / entretien agence",
+  securite: "Registre de sécurité",
+  medical: "Visite médicale",
+  extincteur: "Extincteurs",
+  casier: "Casier judiciaire B2",
   other: "Autre",
 };
+
+// Onglets de la page Documents : 3 sections regroupant les catégories.
+export const DOCUMENT_SECTION_LABEL: Record<DocumentSection, string> = {
+  administratif: "Documents administratifs",
+  etat: "État de l'agence",
+  obligations: "Obligations légales",
+};
+
+export const DOCUMENT_CATEGORY_SECTION: Record<DocumentCategory, DocumentSection> = {
+  kbis: "administratif",
+  declaration: "administratif",
+  id: "administratif",
+  assurance: "administratif",
+  entretien: "etat",
+  securite: "obligations",
+  medical: "obligations",
+  extincteur: "obligations",
+  casier: "obligations",
+  other: "administratif",
+};
+
+export function getDocumentsBySection(
+  agencyId: AgencySlug,
+  section: DocumentSection
+): LegalDocument[] {
+  return DOCUMENTS.filter(
+    (d) =>
+      d.agencyId === agencyId &&
+      DOCUMENT_CATEGORY_SECTION[d.category] === section
+  );
+}
 
 const initialDocuments: LegalDocument[] = [
   // Gambetta — KBis à jour, Déclaration expire bientôt, CNI à jour, registre manquant
@@ -569,6 +720,129 @@ const initialDocuments: LegalDocument[] = [
     category: "other",
     fileName: "rcs-federbe.pdf",
     uploadedAt: isoOffsetDays(-90, 16, 0),
+    status: "up_to_date",
+  },
+  // --- Gambetta : état + obligations légales ---
+  {
+    id: "doc9",
+    agencyId: "gambetta",
+    name: "Attestation assurance multirisque",
+    category: "assurance",
+    fileName: "assurance-gambetta-2026.pdf",
+    uploadedAt: isoOffsetDays(-60, 9, 0),
+    expiresAt: isoOffsetDays(300, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc10",
+    agencyId: "gambetta",
+    name: "État des lieux — menuiserie / peinture / électricité",
+    category: "entretien",
+    fileName: "etat-gambetta-2026.pdf",
+    uploadedAt: isoOffsetDays(-120, 10, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc11",
+    agencyId: "gambetta",
+    name: "Registre de sécurité (passages & contrôles)",
+    category: "securite",
+    fileName: "registre-securite-gambetta.pdf",
+    uploadedAt: isoOffsetDays(-20, 11, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc12",
+    agencyId: "gambetta",
+    name: "Visites médicales — synthèse salariés",
+    category: "medical",
+    fileName: "visites-medicales-gambetta.pdf",
+    uploadedAt: isoOffsetDays(-200, 9, 0),
+    expiresAt: isoOffsetDays(20, 0, 0),
+    status: "expiring_soon",
+  },
+  {
+    id: "doc13",
+    agencyId: "gambetta",
+    name: "Vérification périodique extincteurs",
+    category: "extincteur",
+    fileName: "extincteurs-gambetta-2025.pdf",
+    uploadedAt: isoOffsetDays(-400, 14, 0),
+    expiresAt: isoOffsetDays(-35, 0, 0),
+    status: "expired",
+  },
+  {
+    id: "doc14",
+    agencyId: "gambetta",
+    name: "Casier judiciaire B2 — Sébastien Dubois",
+    category: "casier",
+    fileName: "b2-sebastien-2026.pdf",
+    uploadedAt: isoOffsetDays(-90, 9, 0),
+    expiresAt: isoOffsetDays(275, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc15",
+    agencyId: "gambetta",
+    name: "Casier judiciaire B2 — Léa Martin",
+    category: "casier",
+    status: "missing",
+  },
+  // --- Federbe : état + obligations légales ---
+  {
+    id: "doc16",
+    agencyId: "federbe",
+    name: "Attestation assurance multirisque",
+    category: "assurance",
+    fileName: "assurance-federbe-2026.pdf",
+    uploadedAt: isoOffsetDays(-50, 9, 0),
+    expiresAt: isoOffsetDays(310, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc17",
+    agencyId: "federbe",
+    name: "État des lieux — menuiserie / peinture / électricité",
+    category: "entretien",
+    fileName: "etat-federbe-2026.pdf",
+    uploadedAt: isoOffsetDays(-110, 10, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc18",
+    agencyId: "federbe",
+    name: "Registre de sécurité (passages & contrôles)",
+    category: "securite",
+    status: "missing",
+  },
+  {
+    id: "doc19",
+    agencyId: "federbe",
+    name: "Visites médicales — synthèse salariés",
+    category: "medical",
+    fileName: "visites-medicales-federbe.pdf",
+    uploadedAt: isoOffsetDays(-150, 9, 0),
+    expiresAt: isoOffsetDays(120, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc20",
+    agencyId: "federbe",
+    name: "Vérification périodique extincteurs",
+    category: "extincteur",
+    fileName: "extincteurs-federbe-2026.pdf",
+    uploadedAt: isoOffsetDays(-30, 14, 0),
+    expiresAt: isoOffsetDays(335, 0, 0),
+    status: "up_to_date",
+  },
+  {
+    id: "doc21",
+    agencyId: "federbe",
+    name: "Casier judiciaire B2 — Karim Benali",
+    category: "casier",
+    fileName: "b2-karim-2026.pdf",
+    uploadedAt: isoOffsetDays(-70, 9, 0),
+    expiresAt: isoOffsetDays(295, 0, 0),
     status: "up_to_date",
   },
 ];
@@ -955,4 +1229,82 @@ export function resolveObservation(id: string): Observation | undefined {
     ...OBSERVATIONS_LIST.slice(idx + 1),
   ];
   return updated;
+}
+
+// ============================================================
+// Cas de figure (retours d'expérience / alertes terrain)
+// ============================================================
+
+export const CAS_TYPE_LABEL: Record<CasType, string> = {
+  fausse_monnaie: "Fausses devises",
+  faux_bijou: "Faux bijou / contrefaçon",
+  client_suspect: "Client à surveiller",
+  tentative_vol: "Tentative de vol",
+  autre: "Autre",
+};
+
+const initialCasDeFigure: CasDeFigure[] = [
+  {
+    id: "cas1",
+    agencyId: "gambetta",
+    type: "fausse_monnaie",
+    title: "Client présentant de faux billets de 50 €",
+    description:
+      "Un client a tenté de régler un achat avec plusieurs billets de 50 € détectés faux au stylo. Refus poli, client reparti sans incident. Signalement transmis.",
+    authorName: "Léa Martin",
+    createdAt: isoOffsetDays(-2, 16, 30),
+    severity: "danger",
+  },
+  {
+    id: "cas2",
+    agencyId: "gambetta",
+    type: "faux_bijou",
+    title: "Lot de « Napoléons » plaqués présentés comme or massif",
+    description:
+      "Estimation demandée sur 8 pièces se révélant plaquées. Vérification densité + aimant. Bon réflexe : toujours tester avant estimation.",
+    authorName: "Victor Rico",
+    createdAt: isoOffsetDays(-6, 11, 0),
+    severity: "warning",
+  },
+  {
+    id: "cas3",
+    agencyId: "federbe",
+    type: "client_suspect",
+    title: "Individu repérant les vitrines à plusieurs reprises",
+    description:
+      "Même personne passée 3 fois dans la semaine, photographie discrètement l'agencement. Vigilance renforcée, alerte voisins commerçants.",
+    authorName: "Karim Benali",
+    createdAt: isoOffsetDays(-1, 18, 0),
+    severity: "warning",
+  },
+  {
+    id: "cas4",
+    agencyId: "federbe",
+    type: "tentative_vol",
+    title: "Tentative de vol à l'étalage déjouée",
+    description:
+      "Client a tenté de dissimuler une chaîne pendant l'essayage. Récupérée, client invité à quitter les lieux. RAS depuis.",
+    authorName: "Sofia Garcia",
+    createdAt: isoOffsetDays(-9, 15, 30),
+    severity: "danger",
+  },
+];
+
+let CAS_LIST: CasDeFigure[] = [...initialCasDeFigure];
+
+export function getAllCasDeFigure(): CasDeFigure[] {
+  return CAS_LIST;
+}
+
+export function getCasDeFigureByAgency(agencyId: AgencySlug): CasDeFigure[] {
+  return CAS_LIST.filter((c) => c.agencyId === agencyId);
+}
+
+export function addCasDeFigure(
+  input: Omit<CasDeFigure, "id" | "createdAt">
+): CasDeFigure {
+  const id = "cas" + (CAS_LIST.length + 1) + "-" + Date.now();
+  const c: CasDeFigure = { ...input, id, createdAt: new Date().toISOString() };
+  CAS_LIST = [c, ...CAS_LIST];
+  return c;
 }

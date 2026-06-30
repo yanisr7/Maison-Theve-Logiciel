@@ -14,6 +14,9 @@ import {
   getEmployeesByAgency,
   getCurrentLeavesByAgency,
   getObservationsByAgency,
+  getCasDeFigureByAgency,
+  EMPLOYEE_ROLE_LABEL,
+  CAS_TYPE_LABEL,
 } from "@/lib/mock";
 import { TransitCard } from "@/components/TransitCard";
 import { PickupCard } from "@/components/PickupCard";
@@ -35,7 +38,12 @@ import {
   ArrowRight,
   CalendarRange,
   ClipboardList,
+  Crown,
   FileText,
+  Mail,
+  Phone,
+  ShieldAlert,
+  UserCheck,
   Users,
 } from "lucide-react";
 
@@ -100,6 +108,12 @@ export default function AgencePage({
     (o) => o.priority === "high"
   );
   const previewObservations = openObservations
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+    .slice(0, 2);
+
+  const casList = getCasDeFigureByAgency(agencySlug);
+  const casAlert = casList.filter((c) => c.severity === "danger").length;
+  const previewCas = [...casList]
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 2);
 
@@ -327,26 +341,70 @@ export default function AgencePage({
           </Link>
         </div>
         <Card>
-          <CardContent className="space-y-3 pt-6 text-sm">
+          <CardContent className="space-y-4 pt-6 text-sm">
             <p className="text-muted-foreground">
               <span className="font-medium text-foreground">
                 {employees.length}
               </span>{" "}
               employé{employees.length > 1 ? "s" : ""} actif
               {employees.length > 1 ? "s" : ""}
-              {(() => {
-                const mgr = employees.find((e) => e.role === "responsable");
-                return mgr ? (
-                  <>
-                    {" "}
-                    · Responsable :{" "}
-                    <span className="text-foreground">
-                      {mgr.firstName} {mgr.lastName}
-                    </span>
-                  </>
-                ) : null;
-              })()}
             </p>
+            {employees.length === 0 ? (
+              <p className="text-muted-foreground italic">
+                Aucun salarié rattaché à cette agence.
+              </p>
+            ) : (
+              <ul className="divide-y divide-border rounded-lg border border-border">
+                {employees.map((e) => (
+                  <li
+                    key={e.id}
+                    className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div className="flex items-center gap-2">
+                      {e.role === "responsable" ? (
+                        <Crown
+                          className="size-4 text-[var(--gold)]"
+                          aria-hidden
+                        />
+                      ) : (
+                        <UserCheck
+                          className="size-4 text-[var(--gold)]"
+                          aria-hidden
+                        />
+                      )}
+                      <span className="font-medium text-foreground">
+                        {e.firstName} {e.lastName}
+                      </span>
+                      <Badge variant="outline" className="text-[11px]">
+                        {EMPLOYEE_ROLE_LABEL[e.role]}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-col gap-1 text-xs text-muted-foreground sm:items-end">
+                      <span className="flex items-center gap-1.5">
+                        <Mail className="size-3.5" aria-hidden />
+                        <a
+                          href={`mailto:${e.email}`}
+                          className="hover:text-[var(--gold)] hover:underline"
+                        >
+                          {e.email}
+                        </a>
+                      </span>
+                      {e.phone && (
+                        <span className="flex items-center gap-1.5">
+                          <Phone className="size-3.5" aria-hidden />
+                          <a
+                            href={`tel:${e.phone.replace(/\s/g, "")}`}
+                            className="hover:text-[var(--gold)] hover:underline"
+                          >
+                            {e.phone}
+                          </a>
+                        </span>
+                      )}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
             <Link
               href={`/agence/${agencySlug}/equipe`}
               className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
@@ -417,6 +475,75 @@ export default function AgencePage({
             ))}
           </div>
         )}
+      </section>
+
+      {/* === Cas de figure === */}
+      <section>
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+            <ShieldAlert
+              className="size-5 text-[var(--gold)]"
+              aria-hidden
+            />
+            Cas de figure
+            {casList.length > 0 && (
+              <Badge className="ml-2 bg-[var(--gold)] text-primary-foreground">
+                {casList.length}
+              </Badge>
+            )}
+            {casAlert > 0 && (
+              <Badge className="bg-red-600 text-white">
+                <AlertTriangle className="size-3" /> {casAlert} alerte
+                {casAlert > 1 ? "s" : ""}
+              </Badge>
+            )}
+          </h2>
+          <Link
+            href={`/agence/${agencySlug}/cas-de-figure`}
+            className="text-sm font-medium text-[var(--gold)] hover:underline"
+          >
+            Voir tout →
+          </Link>
+        </div>
+        {previewCas.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-sm text-muted-foreground">
+              Aucun cas de figure signalé pour cette agence.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {previewCas.map((c) => (
+              <Card key={c.id}>
+                <CardHeader className="flex flex-row items-start justify-between gap-3">
+                  <Badge variant="outline" className="text-[11px]">
+                    {CAS_TYPE_LABEL[c.type]}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {relativeDate(c.createdAt)}
+                  </span>
+                </CardHeader>
+                <CardContent className="space-y-2 text-sm">
+                  <p className="line-clamp-2 font-medium text-foreground">
+                    {c.title}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Par{" "}
+                    <span className="font-medium text-foreground">
+                      {c.authorName}
+                    </span>
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+        <Link
+          href={`/agence/${agencySlug}/cas-de-figure`}
+          className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
+        >
+          Consulter les retours d'expérience <ArrowRight className="size-3" />
+        </Link>
       </section>
     </div>
   );

@@ -7,12 +7,19 @@ import { toast } from "sonner";
 import {
   AGENCIES,
   DOCUMENT_CATEGORY_LABEL,
+  DOCUMENT_SECTION_LABEL,
   DOCUMENT_STATUS_LABEL,
   agencyBySlug,
   getDocumentsByAgency,
+  getDocumentsBySection,
   replaceDocument,
 } from "@/lib/mock";
-import type { AgencySlug, DocumentStatus, LegalDocument } from "@/lib/types";
+import type {
+  AgencySlug,
+  DocumentSection,
+  DocumentStatus,
+  LegalDocument,
+} from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { formatDate } from "@/lib/utils";
 import {
@@ -27,6 +34,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import {
   Dialog,
   DialogClose,
@@ -87,14 +100,23 @@ export default function AgencyDocumentsPage({
     return c;
   }, [docs]);
 
-  const sorted = useMemo(() => {
-    return [...docs].sort((a, b) => {
-      const ra = STATUS_ORDER.indexOf(a.status);
-      const rb = STATUS_ORDER.indexOf(b.status);
-      if (ra !== rb) return ra - rb;
-      return a.name.localeCompare(b.name);
-    });
-  }, [docs]);
+  const SECTIONS: DocumentSection[] = ["administratif", "etat", "obligations"];
+
+  const docsBySection = useMemo(() => {
+    const sortDocs = (list: LegalDocument[]) =>
+      [...list].sort((a, b) => {
+        const ra = STATUS_ORDER.indexOf(a.status);
+        const rb = STATUS_ORDER.indexOf(b.status);
+        if (ra !== rb) return ra - rb;
+        return a.name.localeCompare(b.name);
+      });
+    return {
+      administratif: sortDocs(getDocumentsBySection(agencySlug, "administratif")),
+      etat: sortDocs(getDocumentsBySection(agencySlug, "etat")),
+      obligations: sortDocs(getDocumentsBySection(agencySlug, "obligations")),
+    } as Record<DocumentSection, LegalDocument[]>;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [agencySlug, tick]);
 
   if (!canView) {
     return <AccessDenied agencyName={agency.name} />;
@@ -151,16 +173,78 @@ export default function AgencyDocumentsPage({
 
       <Separator />
 
-      <section className="grid gap-4 md:grid-cols-2">
-        {sorted.map((d) => (
-          <DocumentRow
-            key={d.id}
-            document={d}
-            canEdit={canEdit}
-            onDownload={() => handleDownload(d)}
-            onReplaced={() => setTick((t) => t + 1)}
-          />
-        ))}
+      <section>
+        <Tabs
+          defaultValue="administratif"
+          orientation="vertical"
+          className="md:flex-row md:gap-6"
+        >
+          <TabsList
+            variant="line"
+            className="md:w-56 md:shrink-0 md:items-stretch"
+          >
+            {SECTIONS.map((section) => {
+              const count = docsBySection[section].length;
+              const alerts = docsBySection[section].filter(
+                (d) => d.status === "expired" || d.status === "missing"
+              ).length;
+              return (
+                <TabsTrigger
+                  key={section}
+                  value={section}
+                  className="md:justify-between md:px-3 md:py-2.5"
+                >
+                  <span className="flex items-center gap-2">
+                    <FileText className="size-4" aria-hidden />
+                    {DOCUMENT_SECTION_LABEL[section]}
+                  </span>
+                  {alerts > 0 ? (
+                    <Badge className="bg-red-600 text-[10px] text-white">
+                      {alerts}
+                    </Badge>
+                  ) : (
+                    count > 0 && (
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] text-muted-foreground"
+                      >
+                        {count}
+                      </Badge>
+                    )
+                  )}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+
+          {SECTIONS.map((section) => {
+            const list = docsBySection[section];
+            return (
+              <TabsContent key={section} value={section} className="mt-0">
+                <h2 className="mb-4 font-serif text-2xl text-foreground">
+                  {DOCUMENT_SECTION_LABEL[section]}
+                </h2>
+                {list.length === 0 ? (
+                  <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+                    Aucun document dans cette section.
+                  </div>
+                ) : (
+                  <div className="grid gap-4 lg:grid-cols-2">
+                    {list.map((d) => (
+                      <DocumentRow
+                        key={d.id}
+                        document={d}
+                        canEdit={canEdit}
+                        onDownload={() => handleDownload(d)}
+                        onReplaced={() => setTick((t) => t + 1)}
+                      />
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+            );
+          })}
+        </Tabs>
       </section>
     </div>
   );

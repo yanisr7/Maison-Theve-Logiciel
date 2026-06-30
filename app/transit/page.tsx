@@ -16,7 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Eye, Plus, Truck } from "lucide-react";
+import { ArrowRight, Eye, Plus, Truck } from "lucide-react";
 
 const STATUSES: (TransitStatus | "all")[] = [
   "all",
@@ -35,13 +35,16 @@ export default function TransitListPage() {
 
   const transits = useMemo(() => {
     let all = getAllTransits();
-    if (role.kind === "agency") {
-      all = all.filter(
-        (t) => t.from === role.agencySlug || t.to === role.agencySlug
-      );
-    }
     if (filter !== "all") {
       all = all.filter((t) => t.status === filter);
+    }
+    if (role.kind === "agency") {
+      // On met d'abord en avant les transits qui concernent l'agence connectée
+      // (from OU to), puis le reste du réseau. En admin (Pietro) : tout, sans tri.
+      const slug = role.agencySlug;
+      const concerns = (t: (typeof all)[number]) =>
+        t.from === slug || t.to === slug;
+      all = [...all].sort((a, b) => Number(concerns(b)) - Number(concerns(a)));
     }
     return all;
   }, [filter, role]);
@@ -100,11 +103,9 @@ export default function TransitListPage() {
                 <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
                   Date
                 </TableHead>
-                {isPietro && (
-                  <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
-                    De → Vers
-                  </TableHead>
-                )}
+                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                  Trajet
+                </TableHead>
                 <TableHead className="text-background text-[11px] uppercase tracking-[0.12em] text-right">
                   Montant
                 </TableHead>
@@ -121,8 +122,17 @@ export default function TransitListPage() {
                 const lastEvent = t.events[t.events.length - 1];
                 const showShippingInfo =
                   t.status === "in_transit" || t.status === "received";
+                const concernsMe =
+                  role.kind === "agency" &&
+                  (t.from === role.agencySlug || t.to === role.agencySlug);
                 return (
-                  <TableRow key={t.id} className="hover:bg-muted/40">
+                  <TableRow
+                    key={t.id}
+                    className={cn(
+                      "hover:bg-muted/40",
+                      concernsMe && "bg-[var(--gold)]/[0.04]"
+                    )}
+                  >
                     <TableCell className="py-3 font-medium">
                       <div className="flex items-center gap-2">
                         <span className="text-foreground">{t.reference}</span>
@@ -138,16 +148,26 @@ export default function TransitListPage() {
                     </TableCell>
 
                     <TableCell className="py-3 text-muted-foreground">
-                      {formatDate(t.createdAt)}
+                      <div className="flex flex-col gap-0.5">
+                        <span>{formatDate(t.createdAt)}</span>
+                        {t.createdBy && (
+                          <span className="text-[11px] text-muted-foreground/80">
+                            Émis par {t.createdBy}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
-                    {isPietro && (
-                      <TableCell className="py-3 text-sm text-muted-foreground">
+                    <TableCell className="py-3 text-sm">
+                      <span className="inline-flex items-center gap-1.5 text-foreground">
                         {agencyBySlug(t.from).name}
-                        <span className="mx-1.5 text-[var(--gold)]">→</span>
+                        <ArrowRight
+                          className="size-3.5 text-[var(--gold)]"
+                          aria-hidden
+                        />
                         {agencyBySlug(t.to).name}
-                      </TableCell>
-                    )}
+                      </span>
+                    </TableCell>
 
                     <TableCell className="py-3 text-right font-serif text-base text-[var(--gold)]">
                       {formatAmount(t.amount)}
