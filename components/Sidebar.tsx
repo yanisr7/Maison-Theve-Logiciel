@@ -24,9 +24,18 @@ import {
   Globe,
   ChevronsUpDown,
   Check,
+  FileText,
+  Users,
+  ClipboardList,
+  ShieldAlert,
 } from "lucide-react";
 
-type NavItem = { href: string; label: string; icon: React.ElementType };
+type NavItem = {
+  href: string;
+  label: string;
+  icon: React.ElementType;
+  exact?: boolean;
+};
 
 export function Sidebar() {
   const { role, isPietro, isAdminAccount, viewAs, setViewAs, roleLabel, signOut } =
@@ -40,22 +49,50 @@ export function Sidebar() {
   const mainItems: NavItem[] = [
     // Dashboard = contexte effectif : Vue 360° (/admin) si « Toutes les agences »,
     // sinon le dashboard de l'agence affichée (/agence/[slug]).
-    { href: agencyHref, label: "Tableau de bord", icon: LayoutDashboard },
+    { href: agencyHref, label: "Tableau de bord", icon: LayoutDashboard, exact: true },
     { href: "/transit", label: "Transit", icon: Truck },
     { href: "/colis", label: "Bien confié", icon: Package },
     { href: "/rdv", label: "RDV", icon: CalendarClock },
   ];
+  // Sous-pages d'agence : visibles quand un contexte agence est actif
+  // (compte agence, ou admin ayant sélectionné une agence via le dropdown).
+  const agencySlug = role.kind === "agency" ? role.agencySlug : null;
+  const agencyItems: NavItem[] = agencySlug
+    ? [
+        {
+          href: `/agence/${agencySlug}/documents`,
+          label: "Documents légaux",
+          icon: FileText,
+        },
+        {
+          href: `/agence/${agencySlug}/equipe`,
+          label: "Équipe",
+          icon: Users,
+        },
+        {
+          href: `/agence/${agencySlug}/observations`,
+          label: "Observations",
+          icon: ClipboardList,
+        },
+        {
+          href: `/agence/${agencySlug}/cas-de-figure`,
+          label: "Cas de figure",
+          icon: ShieldAlert,
+        },
+      ]
+    : [];
+
   const actionItems: NavItem[] = [
     { href: "/transit/nouveau", label: "Nouveau bon", icon: Plus },
   ];
 
-  const isActive = (href: string) =>
-    href === "/"
-      ? pathname === "/"
+  const isActive = (href: string, exact?: boolean) =>
+    exact || href === "/"
+      ? pathname === href
       : pathname === href || pathname.startsWith(href + "/");
 
   const renderItem = (l: NavItem) => {
-    const active = isActive(l.href);
+    const active = isActive(l.href, l.exact);
     const Icon = l.icon;
     return (
       <Link
@@ -178,6 +215,14 @@ export function Sidebar() {
           </p>
           {mainItems.map(renderItem)}
         </div>
+        {agencyItems.length > 0 && (
+          <div className="space-y-1">
+            <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+              Agence
+            </p>
+            {agencyItems.map(renderItem)}
+          </div>
+        )}
         <div className="space-y-1">
           <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
             Actions
