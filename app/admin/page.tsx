@@ -367,7 +367,10 @@ export default function AdminPage() {
           {ALL_STATUSES.map((s) => (
             <Card key={s} className="gap-2 rounded-2xl py-4 shadow-sm">
               <CardContent className="space-y-2 px-4">
-                <StatusChip status={s} />
+                <StatusChip
+                  status={s}
+                  className="inline-flex max-w-full whitespace-normal text-left leading-tight"
+                />
                 <p className="text-3xl font-medium tabular-nums text-[var(--gold)]">
                   {byStatus[s]}
                 </p>
