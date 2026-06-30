@@ -38,14 +38,14 @@ export function Nav() {
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
-          {links.map((l) => {
+          {links.map((l, i) => {
             const active =
               l.href === "/"
                 ? pathname === "/"
                 : pathname === l.href || pathname.startsWith(l.href + "/");
             return (
               <Link
-                key={l.href}
+                key={`${l.href}-${i}`}
                 href={l.href}
                 className={cn(
                   "rounded-md px-3 py-2 text-sm font-medium transition-colors",
