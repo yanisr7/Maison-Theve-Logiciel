@@ -46,6 +46,7 @@ export default function NouveauBonPage() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState<string>("");
   const [createdBy, setCreatedBy] = useState("");
+  const [expectedAt, setExpectedAt] = useState("");
   const [previewRef, setPreviewRef] = useState("…");
   const [submitting, setSubmitting] = useState(false);
 
@@ -80,7 +81,11 @@ export default function NouveauBonPage() {
   const amountValue = Number.parseInt(amount, 10);
   const amountValid = Number.isFinite(amountValue) && amountValue > 0;
   const canSubmit =
-    from !== to && description.trim().length > 5 && amountValid && !submitting;
+    from !== to &&
+    description.trim().length > 5 &&
+    amountValid &&
+    expectedAt !== "" &&
+    !submitting;
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -93,6 +98,7 @@ export default function NouveauBonPage() {
         transporter,
         description: description.trim(),
         amount: amountValue,
+        expectedAt,
         ...(createdBy.trim() ? { createdBy: createdBy.trim() } : {}),
       });
       toast.success(`Bon ${t.reference} créé`, {
@@ -260,6 +266,21 @@ export default function NouveauBonPage() {
               <p className="text-xs text-muted-foreground">
                 Montant figurant sur la facture, en euros entiers. Utilisé par
                 Pietro pour la vérification bancaire.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="expectedAt">Arrivée prévue</Label>
+              <Input
+                id="expectedAt"
+                type="date"
+                required
+                value={expectedAt}
+                onChange={(e) => setExpectedAt(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                Date d&apos;arrivée estimée — alimente le suivi de progression du
+                bon.
               </p>
             </div>
 

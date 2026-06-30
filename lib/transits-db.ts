@@ -18,6 +18,7 @@ type TransitRow = {
   created_by: string | null;
   invoice_number: string | null;
   refusal_reason: string | null;
+  expected_at: string | null;
   events: TransitEvent[] | null;
   created_at: string;
 };
@@ -37,6 +38,7 @@ function mapRow(r: TransitRow): Transit {
     ...(r.created_by ? { createdBy: r.created_by } : {}),
     ...(r.invoice_number ? { invoiceNumber: r.invoice_number } : {}),
     ...(r.refusal_reason ? { refusalReason: r.refusal_reason } : {}),
+    ...(r.expected_at ? { expectedAt: r.expected_at } : {}),
   };
 }
 
@@ -123,6 +125,7 @@ export async function createTransit(
       amount: input.amount,
       status: "pending",
       created_by: input.createdBy ?? null,
+      expected_at: input.expectedAt ?? null,
       events,
       created_at: createdAt,
     })

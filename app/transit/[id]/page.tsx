@@ -8,7 +8,8 @@ import { agencyBySlug } from "@/lib/mock";
 import { getTransit, updateTransit } from "@/lib/transits-db";
 import { useRole } from "@/lib/role-context";
 import { StatusChip } from "@/components/StatusChip";
-import { formatAmount, formatDateTime } from "@/lib/utils";
+import { TransitProgress } from "@/components/TransitProgress";
+import { formatAmount, formatDate, formatDateTime } from "@/lib/utils";
 import type { Transit } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -265,6 +266,17 @@ export default function TransitDetailPage({
                   </span>
                 </>
               )}
+              {transit.expectedAt && (
+                <>
+                  <span aria-hidden>•</span>
+                  <span>
+                    Arrivée prévue{" "}
+                    <span className="font-medium text-foreground">
+                      {formatDate(transit.expectedAt)}
+                    </span>
+                  </span>
+                </>
+              )}
             </p>
           </div>
 
@@ -323,6 +335,13 @@ export default function TransitDetailPage({
           </div>
         )}
       </div>
+
+      {/* Barre de progression du transit */}
+      <Card className="rounded-2xl shadow-sm">
+        <CardContent className="pt-6">
+          <TransitProgress status={transit.status} />
+        </CardContent>
+      </Card>
 
       <section className="grid gap-6 md:grid-cols-3">
         <div className="space-y-6 md:col-span-2">

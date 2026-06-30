@@ -44,6 +44,7 @@ export type Transit = {
   status: TransitStatus;
   createdAt: string;
   createdBy?: string; // nom du cambiste qui a émis le bon (ex: "Victor Rico")
+  expectedAt?: string; // date d'arrivée prévue (renseignée à la création)
   events: TransitEvent[];
   invoiceNumber?: string;
   refusalReason?: string;
