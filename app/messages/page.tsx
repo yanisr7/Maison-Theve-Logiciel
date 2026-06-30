@@ -120,7 +120,7 @@ export default function MessagesPage() {
   }, [draft, selected, sending, myKey, loadConversations]);
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-6xl flex-col gap-4 px-4 py-6">
+    <div className="flex flex-col gap-4">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Messagerie</h1>
         <p className="text-sm text-muted-foreground">
@@ -128,9 +128,9 @@ export default function MessagesPage() {
         </p>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 md:flex-row">
+      <div className="flex h-[70vh] min-h-[480px] gap-4 max-md:h-auto max-md:flex-col">
         {/* Colonne gauche — Conversations */}
-        <aside className="flex w-full shrink-0 flex-col gap-3 rounded-2xl border bg-card p-4 md:w-80">
+        <aside className="flex min-h-0 w-full shrink-0 flex-col gap-3 rounded-2xl border bg-card p-4 max-md:max-h-72 md:w-80">
           <h2 className="text-sm font-semibold text-muted-foreground">
             Conversations
           </h2>
@@ -201,7 +201,7 @@ export default function MessagesPage() {
         </aside>
 
         {/* Colonne droite — Fil */}
-        <section className="flex min-h-0 flex-1 flex-col rounded-2xl border bg-card">
+        <section className="flex min-h-0 flex-1 flex-col rounded-2xl border bg-card max-md:min-h-[420px]">
           {!selected ? (
             <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8 text-center text-muted-foreground">
               <MessageSquare className="h-10 w-10 opacity-40" />
