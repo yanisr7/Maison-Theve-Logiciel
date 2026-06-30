@@ -46,6 +46,7 @@ export default function NouveauBonPage() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState<string>("");
   const [createdBy, setCreatedBy] = useState("");
+  const [departAt, setDepartAt] = useState("");
   const [expectedAt, setExpectedAt] = useState("");
   const [previewRef, setPreviewRef] = useState("…");
   const [submitting, setSubmitting] = useState(false);
@@ -84,6 +85,7 @@ export default function NouveauBonPage() {
     from !== to &&
     description.trim().length > 5 &&
     amountValid &&
+    departAt !== "" &&
     expectedAt !== "" &&
     !submitting;
 
@@ -98,6 +100,7 @@ export default function NouveauBonPage() {
         transporter,
         description: description.trim(),
         amount: amountValue,
+        departAt,
         expectedAt,
         ...(createdBy.trim() ? { createdBy: createdBy.trim() } : {}),
       });
@@ -269,19 +272,33 @@ export default function NouveauBonPage() {
               </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expectedAt">Arrivée prévue</Label>
-              <Input
-                id="expectedAt"
-                type="date"
-                required
-                value={expectedAt}
-                onChange={(e) => setExpectedAt(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Date d&apos;arrivée estimée — alimente le suivi de progression du
-                bon.
-              </p>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="departAt">Date de départ</Label>
+                <Input
+                  id="departAt"
+                  type="date"
+                  required
+                  value={departAt}
+                  onChange={(e) => setDepartAt(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Date d&apos;envoi prévue du bon.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="expectedAt">Arrivée prévue</Label>
+                <Input
+                  id="expectedAt"
+                  type="date"
+                  required
+                  value={expectedAt}
+                  onChange={(e) => setExpectedAt(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Date d&apos;arrivée estimée — alimente le suivi.
+                </p>
+              </div>
             </div>
 
             <div className="space-y-2">

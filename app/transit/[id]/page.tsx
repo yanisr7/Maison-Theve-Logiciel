@@ -266,6 +266,17 @@ export default function TransitDetailPage({
                   </span>
                 </>
               )}
+              {transit.departAt && (
+                <>
+                  <span aria-hidden>•</span>
+                  <span>
+                    Départ{" "}
+                    <span className="font-medium text-foreground">
+                      {formatDate(transit.departAt)}
+                    </span>
+                  </span>
+                </>
+              )}
               {transit.expectedAt && (
                 <>
                   <span aria-hidden>•</span>
