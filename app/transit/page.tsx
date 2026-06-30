@@ -8,6 +8,7 @@ import type { Transit, TransitStatus } from "@/lib/types";
 import { cn, formatDate, formatAmount } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusChip } from "@/components/StatusChip";
 import {
   Table,
@@ -180,8 +181,24 @@ export default function TransitListPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-          Chargement…
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <div className="flex items-center gap-4 border-b border-border bg-muted/50 px-4 py-3">
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="ml-auto h-3 w-16" />
+          </div>
+          <div className="divide-y divide-border/60">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-4 px-4 py-4">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-40" />
+                <Skeleton className="ml-auto h-4 w-16" />
+                <Skeleton className="h-6 w-20 rounded-full" />
+                <Skeleton className="h-8 w-28 rounded-full" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">

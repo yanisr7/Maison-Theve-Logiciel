@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AGENCIES, PICKUP_STATUS_LABEL } from "@/lib/mock";
 import { getPickupsPage } from "@/lib/pickups-db";
 import { PickupCard } from "@/components/PickupCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { AgencySlug, Pickup, PickupStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
@@ -152,8 +153,24 @@ export default function ColisListPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-          Chargement…
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-40" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+              <div className="flex items-center gap-2 pt-1">
+                <Skeleton className="h-4 w-28" />
+                <Skeleton className="ml-auto h-4 w-20" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : pickups.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">

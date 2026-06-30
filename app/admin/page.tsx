@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AGENCIES,
@@ -17,6 +17,8 @@ import { getAllOpenObservations } from "@/lib/observations-db";
 import { getCurrentLeavesNetworkWide, getAllEmployees } from "@/lib/team-db";
 import { TransitCard } from "@/components/TransitCard";
 import { useRole } from "@/lib/role-context";
+import { useCachedData } from "@/lib/use-cached-data";
+import { Skeleton } from "@/components/ui/skeleton";
 import type {
   Transit,
   Pickup,
@@ -87,16 +89,17 @@ type AdminData = {
 
 export default function AdminPage() {
   const { isPietro } = useRole();
-  const [data, setData] = useState<AdminData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [reviewAgencyFilter, setReviewAgencyFilter] = useState<
-    AgencySlug | "all"
-  >("all");
-
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    Promise.all([
+  const { data } = useCachedData<AdminData>("admin-dashboard", async () => {
+    const [
+      transits,
+      pickups,
+      appointments,
+      reviews,
+      expiringDocuments,
+      openObservations,
+      currentLeavesNetworkWide,
+      allEmployees,
+    ] = await Promise.all([
       getAllTransits(),
       getAllPickups(),
       getAllAppointments(),
@@ -105,40 +108,21 @@ export default function AdminPage() {
       getAllOpenObservations("high"),
       getCurrentLeavesNetworkWide(),
       getAllEmployees(),
-    ])
-      .then(
-        ([
-          transits,
-          pickups,
-          appointments,
-          reviews,
-          expiringDocuments,
-          openObservations,
-          currentLeavesNetworkWide,
-          allEmployees,
-        ]) => {
-          if (!active) return;
-          setData({
-            transits,
-            pickups,
-            appointments,
-            reviews,
-            expiringDocuments,
-            openObservations,
-            currentLeavesNetworkWide,
-            allEmployees,
-          });
-          setLoading(false);
-        }
-      )
-      .catch(() => {
-        if (!active) return;
-        setLoading(false);
-      });
-    return () => {
-      active = false;
+    ]);
+    return {
+      transits,
+      pickups,
+      appointments,
+      reviews,
+      expiringDocuments,
+      openObservations,
+      currentLeavesNetworkWide,
+      allEmployees,
     };
-  }, []);
+  });
+  const [reviewAgencyFilter, setReviewAgencyFilter] = useState<
+    AgencySlug | "all"
+  >("all");
 
   const all = data?.transits ?? [];
   const allPickups = data?.pickups ?? [];
@@ -191,12 +175,8 @@ export default function AdminPage() {
     );
   }
 
-  if (loading || data === null) {
-    return (
-      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-        Chargement…
-      </div>
-    );
+  if (data === null) {
+    return <AdminDashboardSkeleton />;
   }
 
   const toVerify = all.filter((t) => t.status === "paid_unverified");
@@ -645,6 +625,67 @@ export default function AdminPage() {
         leaves={data.currentLeavesNetworkWide}
         employees={data.allEmployees}
       />
+    </div>
+  );
+}
+
+function AdminDashboardSkeleton() {
+  return (
+    <div className="space-y-8">
+      {/* Barre de titre */}
+      <header className="space-y-2">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </header>
+
+      {/* Rangée de KPI */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div
+            key={i}
+            className="rounded-2xl border border-border bg-card p-5 shadow-sm"
+          >
+            <Skeleton className="h-3 w-24" />
+            <Skeleton className="mt-3 h-8 w-16" />
+            <Skeleton className="mt-3 h-3 w-20" />
+          </div>
+        ))}
+      </div>
+
+      {/* Statuts en cours */}
+      <section className="space-y-4">
+        <Skeleton className="h-7 w-40" />
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-7">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-2 rounded-2xl border border-border bg-card p-4 shadow-sm"
+            >
+              <Skeleton className="h-5 w-16" />
+              <Skeleton className="h-8 w-10" />
+              <Skeleton className="h-3 w-14" />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Grille de cartes (agences) */}
+      <section className="space-y-4">
+        <Skeleton className="h-7 w-32" />
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-3 w-24" />
+              <Skeleton className="mt-3 h-6 w-20" />
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

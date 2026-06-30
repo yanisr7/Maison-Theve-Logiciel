@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { APPOINTMENT_STATUS_LABEL } from "@/lib/mock";
 import { getAppointmentsPage } from "@/lib/appointments-db";
 import { AppointmentCard } from "@/components/AppointmentCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { Appointment, AppointmentStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
@@ -94,8 +95,21 @@ export default function RdvListPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-          Chargement…
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-sm"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-5 w-44" />
+                <Skeleton className="h-6 w-24 rounded-full" />
+              </div>
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          ))}
         </div>
       ) : rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">

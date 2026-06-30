@@ -16,6 +16,7 @@ import type {
 import { cn, relativeDate, formatDateTime } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -153,9 +154,20 @@ export default function MessagesPage() {
 
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto">
             {loadingConvs ? (
-              <p className="px-2 py-4 text-sm text-muted-foreground">
-                Chargement…
-              </p>
+              <div className="space-y-1">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-1.5 rounded-xl border border-transparent px-3 py-2"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-10" />
+                    </div>
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                ))}
+              </div>
             ) : conversations.length === 0 ? (
               <p className="px-2 py-4 text-sm text-muted-foreground">
                 Aucune conversation pour l’instant.
@@ -217,7 +229,25 @@ export default function MessagesPage() {
 
               <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-5">
                 {loadingThread ? (
-                  <p className="text-sm text-muted-foreground">Chargement…</p>
+                  <div className="space-y-3">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={cn(
+                          "flex flex-col",
+                          i % 2 === 0 ? "items-start" : "items-end"
+                        )}
+                      >
+                        <Skeleton
+                          className={cn(
+                            "h-10 rounded-2xl",
+                            i % 2 === 0 ? "w-1/2" : "w-2/5"
+                          )}
+                        />
+                        <Skeleton className="mt-1 h-3 w-16" />
+                      </div>
+                    ))}
+                  </div>
                 ) : thread.length === 0 ? (
                   <p className="text-sm text-muted-foreground">
                     Aucun message. Écrivez le premier !

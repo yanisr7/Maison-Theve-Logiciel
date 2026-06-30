@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
@@ -39,6 +39,8 @@ import type {
   CasDeFigure,
 } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
+import { useCachedData } from "@/lib/use-cached-data";
+import { Skeleton } from "@/components/ui/skeleton";
 import { relativeDate, formatAmount } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -64,10 +66,7 @@ export default function AgencePage({
 }) {
   const { slug } = use(params);
   const isValid = AGENCIES.some((a) => a.slug === slug);
-  if (!isValid) return notFound();
-
   const agencySlug = slug as AgencySlug;
-  const agency = agencyBySlug(agencySlug);
   const { roleLabel, isPietro } = useRole();
 
   type DashboardData = {
@@ -82,70 +81,51 @@ export default function AgencePage({
     casList: CasDeFigure[];
   };
 
-  const [data, setData] = useState<DashboardData | null>(null);
+  const { data } = useCachedData<DashboardData>(
+    isValid ? `agence-dashboard:${agencySlug}` : null,
+    async () => {
+      const [
+        transits,
+        pickups,
+        appointments,
+        reviews,
+        docs,
+        employees,
+        currentLeaves,
+        observations,
+        casList,
+      ] = await Promise.all([
+        getTransitsByAgency(agencySlug),
+        getPickupsByAgency(agencySlug),
+        getAppointmentsByAgency(agencySlug),
+        getReviewsByAgency(agencySlug),
+        getDocumentsByAgency(agencySlug),
+        getEmployeesByAgency(agencySlug),
+        getCurrentLeavesByAgency(agencySlug),
+        getObservationsByAgency(agencySlug),
+        getCasDeFigureByAgency(agencySlug),
+      ]);
+      return {
+        transits,
+        pickups,
+        appointments,
+        reviews,
+        docs,
+        employees,
+        currentLeaves,
+        observations,
+        casList,
+      };
+    }
+  );
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([
-      getTransitsByAgency(agencySlug),
-      getPickupsByAgency(agencySlug),
-      getAppointmentsByAgency(agencySlug),
-      getReviewsByAgency(agencySlug),
-      getDocumentsByAgency(agencySlug),
-      getEmployeesByAgency(agencySlug),
-      getCurrentLeavesByAgency(agencySlug),
-      getObservationsByAgency(agencySlug),
-      getCasDeFigureByAgency(agencySlug),
-    ])
-      .then(
-        ([
-          transits,
-          pickups,
-          appointments,
-          reviews,
-          docs,
-          employees,
-          currentLeaves,
-          observations,
-          casList,
-        ]) => {
-          if (active)
-            setData({
-              transits,
-              pickups,
-              appointments,
-              reviews,
-              docs,
-              employees,
-              currentLeaves,
-              observations,
-              casList,
-            });
-        }
-      )
-      .catch(() => {
-        if (active)
-          setData({
-            transits: [],
-            pickups: [],
-            appointments: [],
-            reviews: [],
-            docs: [],
-            employees: [],
-            currentLeaves: [],
-            observations: [],
-            casList: [],
-          });
-      });
-    return () => {
-      active = false;
-    };
-  }, [agencySlug]);
+  // Early-return après les hooks (règles des hooks respectées).
+  if (!isValid) return notFound();
+
+  const agency = agencyBySlug(agencySlug);
 
   if (!data) {
-    return (
-      <div className="py-24 text-center text-muted-foreground">Chargement…</div>
-    );
+    return <AgenceDashboardSkeleton />;
   }
 
   const transits = data.transits;
@@ -712,6 +692,67 @@ export default function AgencePage({
         >
           Consulter les retours d'expérience <ArrowRight className="size-3" />
         </Link>
+      </section>
+    </div>
+  );
+}
+
+function AgenceDashboardSkeleton() {
+  return (
+    <div className="space-y-12">
+      {/* En-tête + accès rapides */}
+      <header className="space-y-6">
+        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="mt-3 h-10 w-64" />
+          <Skeleton className="mt-3 h-4 w-72" />
+          <Skeleton className="mt-3 h-4 w-56" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <Skeleton className="size-10 rounded-xl" />
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-3 w-16" />
+            </div>
+          ))}
+        </div>
+      </header>
+
+      {/* Bloc montant + stats */}
+      <section className="space-y-6">
+        <Skeleton className="h-7 w-40" />
+        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+          <Skeleton className="h-3 w-48" />
+          <Skeleton className="mt-2 h-8 w-32" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-2 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-8 w-10" />
+            </div>
+          ))}
+        </div>
+        {/* Grille de cartes */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-sm"
+            >
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

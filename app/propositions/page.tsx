@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -160,7 +161,23 @@ export default function PropositionsPage() {
         </h2>
 
         {proposals === null ? (
-          <p className="text-muted-foreground">Chargement…</p>
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="rounded-2xl shadow-sm">
+                <CardContent className="flex flex-wrap items-start justify-between gap-4 pt-6">
+                  <div className="min-w-0 flex-1 space-y-2.5">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-5 w-48" />
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </div>
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         ) : proposals.length === 0 ? (
           <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
             Aucune proposition pour l&apos;instant.
