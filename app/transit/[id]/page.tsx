@@ -4,7 +4,8 @@ import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
-import { agencyBySlug, getTransit, updateTransit } from "@/lib/mock";
+import { agencyBySlug } from "@/lib/mock";
+import { getTransit, updateTransit } from "@/lib/transits-db";
 import { useRole } from "@/lib/role-context";
 import { StatusChip } from "@/components/StatusChip";
 import { formatAmount, formatDateTime } from "@/lib/utils";
@@ -22,12 +23,34 @@ export default function TransitDetailPage({
   const { id } = use(params);
   const { role, roleLabel, isPietro } = useRole();
 
-  const initial = getTransit(id);
-  const [transit, setTransit] = useState<Transit | undefined>(initial);
+  const [transit, setTransit] = useState<Transit | undefined>(undefined);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setTransit(getTransit(id));
+    let active = true;
+    setLoading(true);
+    getTransit(id)
+      .then((t) => {
+        if (!active) return;
+        setTransit(t ?? undefined);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+        Chargement…
+      </div>
+    );
+  }
 
   if (!transit) return notFound();
 
@@ -37,8 +60,8 @@ export default function TransitDetailPage({
   const isSender = role.kind === "agency" && role.agencySlug === transit.from;
   const isRecipient = role.kind === "agency" && role.agencySlug === transit.to;
 
-  function mutate(fn: (t: Transit) => Transit, toastText: string) {
-    const updated = updateTransit(transit!.id, fn);
+  async function mutate(fn: (t: Transit) => Transit, toastText: string) {
+    const updated = await updateTransit(transit!.id, fn);
     if (updated) {
       setTransit({ ...updated });
       toast.success(toastText);

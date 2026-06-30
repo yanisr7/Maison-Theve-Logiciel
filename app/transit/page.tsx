@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { getAllTransits, STATUS_LABEL, agencyBySlug } from "@/lib/mock";
-import type { TransitStatus } from "@/lib/types";
+import { STATUS_LABEL, agencyBySlug } from "@/lib/mock";
+import { getAllTransits } from "@/lib/transits-db";
+import type { Transit, TransitStatus } from "@/lib/types";
 import { cn, formatDate, formatAmount } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,20 @@ const STATUSES: (TransitStatus | "all")[] = [
 export default function TransitListPage() {
   const { role, isPietro } = useRole();
   const [filter, setFilter] = useState<TransitStatus | "all">("all");
+  const [allTransits, setAllTransits] = useState<Transit[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAllTransits()
+      .then((t) => {
+        setAllTransits(t);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const transits = useMemo(() => {
-    let all = getAllTransits();
+    let all = allTransits;
     if (filter !== "all") {
       all = all.filter((t) => t.status === filter);
     }
@@ -47,7 +59,7 @@ export default function TransitListPage() {
       all = [...all].sort((a, b) => Number(concerns(b)) - Number(concerns(a)));
     }
     return all;
-  }, [filter, role]);
+  }, [filter, role, allTransits]);
 
   return (
     <div className="space-y-8">
@@ -88,7 +100,11 @@ export default function TransitListPage() {
         ))}
       </div>
 
-      {transits.length === 0 ? (
+      {loading ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+          Chargement…
+        </div>
+      ) : transits.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Aucun bon correspondant.
         </div>

@@ -1,14 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import {
-  AGENCIES,
-  createTransit,
-  getProductCatalog,
-  nextReference,
-} from "@/lib/mock";
+import { AGENCIES, getProductCatalog } from "@/lib/mock";
+import { createTransit, getNextReference } from "@/lib/transits-db";
 import type { AgencySlug, ProductCategory, ProductRef, Transporter } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { Button } from "@/components/ui/button";
@@ -50,6 +46,14 @@ export default function NouveauBonPage() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState<string>("");
   const [createdBy, setCreatedBy] = useState("");
+  const [previewRef, setPreviewRef] = useState("…");
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    getNextReference()
+      .then(setPreviewRef)
+      .catch(() => setPreviewRef("…"));
+  }, []);
 
   // Référentiel produits, groupé par catégorie pour un affichage lisible.
   const catalogByCategory = useMemo(() => {
@@ -73,27 +77,32 @@ export default function NouveauBonPage() {
     });
   }
 
-  const previewRef = useMemo(() => nextReference(), []);
   const amountValue = Number.parseInt(amount, 10);
   const amountValid = Number.isFinite(amountValue) && amountValue > 0;
   const canSubmit =
-    from !== to && description.trim().length > 5 && amountValid;
+    from !== to && description.trim().length > 5 && amountValid && !submitting;
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!canSubmit) return;
-    const t = createTransit({
-      from,
-      to,
-      transporter,
-      description: description.trim(),
-      amount: amountValue,
-      ...(createdBy.trim() ? { createdBy: createdBy.trim() } : {}),
-    });
-    toast.success(`Bon ${t.reference} créé`, {
-      description: "En attente de validation du destinataire.",
-    });
-    router.push(`/transit/${t.id}`);
+    setSubmitting(true);
+    try {
+      const t = await createTransit({
+        from,
+        to,
+        transporter,
+        description: description.trim(),
+        amount: amountValue,
+        ...(createdBy.trim() ? { createdBy: createdBy.trim() } : {}),
+      });
+      toast.success(`Bon ${t.reference} créé`, {
+        description: "En attente de validation du destinataire.",
+      });
+      router.push(`/transit/${t.id}`);
+    } catch {
+      toast.error("Création impossible — réessayez.");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -285,7 +294,7 @@ export default function NouveauBonPage() {
                   Annuler
                 </Button>
                 <Button type="submit" disabled={!canSubmit}>
-                  Créer le bon
+                  {submitting ? "Création…" : "Créer le bon"}
                 </Button>
               </div>
             </div>
