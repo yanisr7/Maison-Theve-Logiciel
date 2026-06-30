@@ -1,14 +1,11 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  AGENCIES,
-  agencyBySlug,
-  getCasDeFigureByAgency,
-} from "@/lib/mock";
-import type { AgencySlug, CasSeverity } from "@/lib/types";
+import { AGENCIES, agencyBySlug } from "@/lib/mock";
+import { getCasDeFigureByAgency } from "@/lib/cas-db";
+import type { AgencySlug, CasSeverity, CasDeFigure } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { CasCard } from "@/components/CasCard";
 import {
@@ -36,6 +33,24 @@ export default function AgencyCasDeFigurePage({
   const { isPietro, isAgency } = useRole();
 
   const canView = isPietro || isAgency(agencySlug);
+
+  const [cas, setCas] = useState<CasDeFigure[] | null>(null);
+
+  useEffect(() => {
+    if (!canView) return;
+    let active = true;
+    getCasDeFigureByAgency(agencySlug)
+      .then((res) => {
+        if (active) setCas(res);
+      })
+      .catch(() => {
+        if (active) setCas([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, [agencySlug, canView]);
+
   if (!canView) {
     return (
       <div className="mx-auto max-w-xl">
@@ -57,7 +72,13 @@ export default function AgencyCasDeFigurePage({
     );
   }
 
-  const casList = [...getCasDeFigureByAgency(agencySlug)].sort((a, b) => {
+  if (!cas) {
+    return (
+      <div className="py-24 text-center text-muted-foreground">Chargement…</div>
+    );
+  }
+
+  const casList = [...cas].sort((a, b) => {
     const ra = SEVERITY_ORDER.indexOf(a.severity);
     const rb = SEVERITY_ORDER.indexOf(b.severity);
     if (ra !== rb) return ra - rb;

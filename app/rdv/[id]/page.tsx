@@ -4,11 +4,11 @@ import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
+import { agencyBySlug } from "@/lib/mock";
 import {
-  agencyBySlug,
   getAppointment,
   updateAppointmentStatus,
-} from "@/lib/mock";
+} from "@/lib/appointments-db";
 import { useRole } from "@/lib/role-context";
 import { AppointmentStatusChip } from "@/components/AppointmentStatusChip";
 import { formatDateTime } from "@/lib/utils";
@@ -36,17 +36,34 @@ export default function AppointmentDetailPage({
   const { id } = use(params);
   const { role, roleLabel, isPietro } = useRole();
 
-  const initial = getAppointment(id);
-  const [appointment, setAppointment] = useState<Appointment | undefined>(
-    initial
-  );
+  const [appointment, setAppointment] = useState<Appointment | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const [openReschedule, setOpenReschedule] = useState(false);
   const [newDate, setNewDate] = useState<string>("");
 
   useEffect(() => {
-    setAppointment(getAppointment(id));
+    let active = true;
+    setLoading(true);
+    getAppointment(id)
+      .then((data) => {
+        if (active) setAppointment(data);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+        Chargement…
+      </div>
+    );
+  }
 
   if (!appointment) return notFound();
 
@@ -56,31 +73,34 @@ export default function AppointmentDetailPage({
     role.kind === "agency" && role.agencySlug === appointment.agencyId;
   const canAct = isOwnAgency || isPietro;
 
-  function refresh(updated: Appointment | undefined) {
+  function refresh(updated: Appointment | null) {
     if (updated) setAppointment({ ...updated });
   }
 
-  function handleDone() {
-    const updated = updateAppointmentStatus(appointment!.id, "done");
+  async function handleDone() {
+    const updated = await updateAppointmentStatus(appointment!.id, "done");
     refresh(updated);
     toast.success(
       `📧 Email satisfaction envoyé à ${appointment!.clientEmail}`
     );
   }
 
-  function handleCancel() {
-    const updated = updateAppointmentStatus(appointment!.id, "cancelled");
+  async function handleCancel() {
+    const updated = await updateAppointmentStatus(
+      appointment!.id,
+      "cancelled"
+    );
     refresh(updated);
     toast.success("RDV annulé");
   }
 
-  function handleReschedule() {
+  async function handleReschedule() {
     if (!newDate) {
       toast.error("Choisissez une nouvelle date");
       return;
     }
     const iso = new Date(newDate).toISOString();
-    const updated = updateAppointmentStatus(
+    const updated = await updateAppointmentStatus(
       appointment!.id,
       "rescheduled",
       iso

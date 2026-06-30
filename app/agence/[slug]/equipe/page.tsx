@@ -1,19 +1,21 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { toast } from "sonner";
 import {
   AGENCIES,
   EMPLOYEE_ROLE_LABEL,
   LEAVE_TYPE_LABEL,
   agencyBySlug,
+} from "@/lib/mock";
+import {
   getEmployeesByAgency,
   getUpcomingLeavesByAgency,
-  getEmployee,
   getCurrentLeavesByAgency,
-} from "@/lib/mock";
-import type { AgencySlug } from "@/lib/types";
+} from "@/lib/team-db";
+import type { AgencySlug, Employee, Leave } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { formatDate, yearsSince } from "@/lib/utils";
 import {
@@ -48,6 +50,38 @@ export default function AgencyTeamPage({
   const { isPietro, isAgency } = useRole();
 
   const canView = isPietro || isAgency(agencySlug);
+
+  const [loading, setLoading] = useState(true);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [upcomingLeaves, setUpcomingLeaves] = useState<Leave[]>([]);
+  const [currentLeaves, setCurrentLeaves] = useState<Leave[]>([]);
+
+  useEffect(() => {
+    if (!canView) return;
+    let cancelled = false;
+    setLoading(true);
+    Promise.all([
+      getEmployeesByAgency(agencySlug),
+      getUpcomingLeavesByAgency(agencySlug, 14),
+      getCurrentLeavesByAgency(agencySlug),
+    ])
+      .then(([emps, upcoming, current]) => {
+        if (cancelled) return;
+        setEmployees(emps);
+        setUpcomingLeaves(upcoming);
+        setCurrentLeaves(current);
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Erreur lors du chargement de l'équipe.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agencySlug, canView]);
+
   if (!canView) {
     return (
       <div className="mx-auto max-w-xl">
@@ -69,11 +103,15 @@ export default function AgencyTeamPage({
     );
   }
 
-  const employees = getEmployeesByAgency(agencySlug);
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-muted-foreground">Chargement…</div>
+    );
+  }
+
   const manager = employees.find((e) => e.role === "responsable");
   const others = employees.filter((e) => e.role !== "responsable");
-  const upcomingLeaves = getUpcomingLeavesByAgency(agencySlug, 14);
-  const currentLeaves = getCurrentLeavesByAgency(agencySlug);
+  const employeeById = new Map(employees.map((e) => [e.id, e]));
 
   return (
     <div className="space-y-10">
@@ -227,7 +265,7 @@ export default function AgencyTeamPage({
         ) : (
           <ul className="divide-y divide-border rounded-xl border border-border bg-card">
             {upcomingLeaves.map((l) => {
-              const emp = getEmployee(l.employeeId);
+              const emp = employeeById.get(l.employeeId);
               const empName = emp
                 ? `${emp.firstName} ${emp.lastName}`
                 : "Employé inconnu";

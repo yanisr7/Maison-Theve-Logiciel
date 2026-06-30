@@ -6,11 +6,10 @@ import Link from "next/link";
 import { toast } from "sonner";
 import {
   agencyBySlug,
-  getPickup,
-  updatePickupStatus,
   PAYMENT_METHOD_LABEL,
   PICKUP_STATUS_LABEL,
 } from "@/lib/mock";
+import { getPickup, updatePickupStatus } from "@/lib/pickups-db";
 import { useRole } from "@/lib/role-context";
 import { PickupStatusChip } from "@/components/PickupStatusChip";
 import { formatDateTime } from "@/lib/utils";
@@ -31,12 +30,34 @@ export default function PickupDetailPage({
   const { id } = use(params);
   const { role, roleLabel, isPietro } = useRole();
 
-  const initial = getPickup(id);
-  const [pickup, setPickup] = useState<Pickup | undefined>(initial);
+  const [pickup, setPickup] = useState<Pickup | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setPickup(getPickup(id));
+    let active = true;
+    setLoading(true);
+    getPickup(id)
+      .then((d) => {
+        if (!active) return;
+        setPickup(d);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [id]);
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+        Chargement…
+      </div>
+    );
+  }
 
   if (!pickup) return notFound();
 
@@ -46,8 +67,8 @@ export default function PickupDetailPage({
     role.kind === "agency" && role.agencySlug === pickup.destinationAgencyId;
   const canAct = isDestAgency || isPietro;
 
-  function handleReceive() {
-    const updated = updatePickupStatus(pickup!.id, "available");
+  async function handleReceive() {
+    const updated = await updatePickupStatus(pickup!.id, "available");
     if (updated) {
       setPickup({ ...updated });
       // Email simulé (aucun envoi réel) — confirmation visuelle pour l'agence
@@ -60,8 +81,8 @@ export default function PickupDetailPage({
     }
   }
 
-  function handlePickedUp() {
-    const updated = updatePickupStatus(pickup!.id, "picked_up");
+  async function handlePickedUp() {
+    const updated = await updatePickupStatus(pickup!.id, "picked_up");
     if (updated) {
       setPickup({ ...updated });
       toast.success(`Bien confié remis à ${pickup!.clientName}`);

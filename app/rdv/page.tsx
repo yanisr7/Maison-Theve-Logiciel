@@ -1,13 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  AGENCIES,
-  getAllAppointments,
-  APPOINTMENT_STATUS_LABEL,
-} from "@/lib/mock";
+import { useEffect, useMemo, useState } from "react";
+import { AGENCIES, APPOINTMENT_STATUS_LABEL } from "@/lib/mock";
+import { getAllAppointments } from "@/lib/appointments-db";
 import { AppointmentCard } from "@/components/AppointmentCard";
-import type { AgencySlug, AppointmentStatus } from "@/lib/types";
+import type {
+  AgencySlug,
+  Appointment,
+  AppointmentStatus,
+} from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 
@@ -45,9 +46,26 @@ export default function RdvListPage() {
   );
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [agencyFilter, setAgencyFilter] = useState<AgencySlug | "all">("all");
+  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    getAllAppointments()
+      .then((data) => {
+        if (active) setAllAppointments(data);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const appointments = useMemo(() => {
-    let all = getAllAppointments();
+    let all = allAppointments;
     if (role.kind === "agency") {
       all = all.filter((a) => a.agencyId === role.agencySlug);
     } else if (agencyFilter !== "all") {
@@ -71,7 +89,7 @@ export default function RdvListPage() {
       const db = new Date(b.rescheduledAt ?? b.scheduledAt).getTime();
       return da - db;
     });
-  }, [statusFilter, dateFilter, agencyFilter, role]);
+  }, [allAppointments, statusFilter, dateFilter, agencyFilter, role]);
 
   return (
     <div className="space-y-8">
@@ -165,7 +183,11 @@ export default function RdvListPage() {
         )}
       </div>
 
-      {appointments.length === 0 ? (
+      {loading ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+          Chargement…
+        </div>
+      ) : appointments.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Aucun RDV correspondant.
         </div>

@@ -1,23 +1,22 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import {
   AGENCIES,
   agencyBySlug,
-  getAllTransits,
-  getAllPickups,
-  getAllAppointments,
-  getAllReviews,
-  getDocumentsByAgency,
-  getEmployeesByAgency,
-  getCurrentLeavesByAgency,
-  getObservationsByAgency,
-  getCasDeFigureByAgency,
   EMPLOYEE_ROLE_LABEL,
   CAS_TYPE_LABEL,
 } from "@/lib/mock";
+import { getAllTransits } from "@/lib/transits-db";
+import { getAllPickups } from "@/lib/pickups-db";
+import { getAllAppointments } from "@/lib/appointments-db";
+import { getAllReviews } from "@/lib/reviews-db";
+import { getDocumentsByAgency } from "@/lib/documents-db";
+import { getEmployeesByAgency, getCurrentLeavesByAgency } from "@/lib/team-db";
+import { getObservationsByAgency } from "@/lib/observations-db";
+import { getCasDeFigureByAgency } from "@/lib/cas-db";
 import { TransitCard } from "@/components/TransitCard";
 import { PickupCard } from "@/components/PickupCard";
 import { AppointmentCard } from "@/components/AppointmentCard";
@@ -27,7 +26,18 @@ import {
   ObservationPriorityChip,
   ObservationStatusChip,
 } from "@/components/ObservationChips";
-import type { AgencySlug } from "@/lib/types";
+import type {
+  AgencySlug,
+  Transit,
+  Pickup,
+  Appointment,
+  Review,
+  LegalDocument,
+  Employee,
+  Leave,
+  Observation,
+  CasDeFigure,
+} from "@/lib/types";
 import { useRole } from "@/lib/role-context";
 import { relativeDate } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -60,13 +70,91 @@ export default function AgencePage({
   const agency = agencyBySlug(agencySlug);
   const { roleLabel, isPietro } = useRole();
 
-  const transits = getAllTransits().filter(
+  type DashboardData = {
+    transits: Transit[];
+    pickups: Pickup[];
+    appointments: Appointment[];
+    reviews: Review[];
+    docs: LegalDocument[];
+    employees: Employee[];
+    currentLeaves: Leave[];
+    observations: Observation[];
+    casList: CasDeFigure[];
+  };
+
+  const [data, setData] = useState<DashboardData | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    Promise.all([
+      getAllTransits(),
+      getAllPickups(),
+      getAllAppointments(),
+      getAllReviews(),
+      getDocumentsByAgency(agencySlug),
+      getEmployeesByAgency(agencySlug),
+      getCurrentLeavesByAgency(agencySlug),
+      getObservationsByAgency(agencySlug),
+      getCasDeFigureByAgency(agencySlug),
+    ])
+      .then(
+        ([
+          transits,
+          pickups,
+          appointments,
+          reviews,
+          docs,
+          employees,
+          currentLeaves,
+          observations,
+          casList,
+        ]) => {
+          if (active)
+            setData({
+              transits,
+              pickups,
+              appointments,
+              reviews,
+              docs,
+              employees,
+              currentLeaves,
+              observations,
+              casList,
+            });
+        }
+      )
+      .catch(() => {
+        if (active)
+          setData({
+            transits: [],
+            pickups: [],
+            appointments: [],
+            reviews: [],
+            docs: [],
+            employees: [],
+            currentLeaves: [],
+            observations: [],
+            casList: [],
+          });
+      });
+    return () => {
+      active = false;
+    };
+  }, [agencySlug]);
+
+  if (!data) {
+    return (
+      <div className="py-24 text-center text-muted-foreground">Chargement…</div>
+    );
+  }
+
+  const transits = data.transits.filter(
     (t) => t.from === agencySlug || t.to === agencySlug
   );
   const sent = transits.filter((t) => t.from === agencySlug);
   const received = transits.filter((t) => t.to === agencySlug);
 
-  const allPickups = getAllPickups().filter(
+  const allPickups = data.pickups.filter(
     (p) => p.destinationAgencyId === agencySlug
   );
   const openPickups = allPickups.filter((p) => p.status !== "picked_up");
@@ -74,7 +162,7 @@ export default function AgencePage({
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 3);
 
-  const allAppointments = getAllAppointments().filter(
+  const allAppointments = data.appointments.filter(
     (a) => a.agencyId === agencySlug
   );
   const today = new Date();
@@ -86,23 +174,23 @@ export default function AgencePage({
     isSameDay(new Date(a.rescheduledAt ?? a.scheduledAt))
   );
 
-  const agencyReviews = [...getAllReviews()]
+  const agencyReviews = [...data.reviews]
     .filter((r) => r.agencyId === agencySlug)
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   const recentReviews = agencyReviews.slice(0, 3);
 
   // === Modules Phase 1 enrichis ===
-  const docs = getDocumentsByAgency(agencySlug);
+  const docs = data.docs;
   const docsOk = docs.filter((d) => d.status === "up_to_date").length;
   const docsAlert = docs.filter(
     (d) => d.status === "expired" || d.status === "missing"
   ).length;
   const docsAttention = docs.filter((d) => d.status !== "up_to_date").length;
 
-  const employees = getEmployeesByAgency(agencySlug);
-  const currentLeaves = getCurrentLeavesByAgency(agencySlug);
+  const employees = data.employees;
+  const currentLeaves = data.currentLeaves;
 
-  const observations = getObservationsByAgency(agencySlug);
+  const observations = data.observations;
   const openObservations = observations.filter((o) => o.status === "open");
   const hasHighPriorityObs = openObservations.some(
     (o) => o.priority === "high"
@@ -111,7 +199,7 @@ export default function AgencePage({
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 2);
 
-  const casList = getCasDeFigureByAgency(agencySlug);
+  const casList = data.casList;
   const casAlert = casList.filter((c) => c.severity === "danger").length;
   const previewCas = [...casList]
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))

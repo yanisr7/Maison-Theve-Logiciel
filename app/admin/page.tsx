@@ -1,24 +1,34 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   AGENCIES,
-  getAllTransits,
   STATUS_LABEL,
   agencyBySlug,
-  getAllPickups,
-  getAllAppointments,
-  getAllReviews,
-  getExpiringDocuments,
-  getAllOpenObservations,
-  getCurrentLeavesNetworkWide,
-  getEmployee,
   LEAVE_TYPE_LABEL,
 } from "@/lib/mock";
+import { getAllTransits } from "@/lib/transits-db";
+import { getAllPickups } from "@/lib/pickups-db";
+import { getAllAppointments } from "@/lib/appointments-db";
+import { getAllReviews } from "@/lib/reviews-db";
+import { getExpiringDocuments } from "@/lib/documents-db";
+import { getAllOpenObservations } from "@/lib/observations-db";
+import { getCurrentLeavesNetworkWide, getAllEmployees } from "@/lib/team-db";
 import { TransitCard } from "@/components/TransitCard";
 import { useRole } from "@/lib/role-context";
-import type { AgencySlug, TransitStatus } from "@/lib/types";
+import type {
+  Transit,
+  Pickup,
+  Appointment,
+  Review,
+  LegalDocument,
+  Observation,
+  Leave,
+  Employee,
+  AgencySlug,
+  TransitStatus,
+} from "@/lib/types";
 import { StatusChip } from "@/components/StatusChip";
 import { ReviewCard } from "@/components/ReviewCard";
 import { PickupStatusChip } from "@/components/PickupStatusChip";
@@ -64,15 +74,76 @@ const ALL_STATUSES: TransitStatus[] = [
   "refused",
 ];
 
+type AdminData = {
+  transits: Transit[];
+  pickups: Pickup[];
+  appointments: Appointment[];
+  reviews: Review[];
+  expiringDocuments: LegalDocument[];
+  openObservations: Observation[];
+  currentLeavesNetworkWide: Leave[];
+  allEmployees: Employee[];
+};
+
 export default function AdminPage() {
   const { isPietro } = useRole();
-  const all = getAllTransits();
-  const allPickups = getAllPickups();
-  const allAppointments = getAllAppointments();
-  const allReviews = getAllReviews();
+  const [data, setData] = useState<AdminData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [reviewAgencyFilter, setReviewAgencyFilter] = useState<
     AgencySlug | "all"
   >("all");
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    Promise.all([
+      getAllTransits(),
+      getAllPickups(),
+      getAllAppointments(),
+      getAllReviews(),
+      getExpiringDocuments(),
+      getAllOpenObservations("high"),
+      getCurrentLeavesNetworkWide(),
+      getAllEmployees(),
+    ])
+      .then(
+        ([
+          transits,
+          pickups,
+          appointments,
+          reviews,
+          expiringDocuments,
+          openObservations,
+          currentLeavesNetworkWide,
+          allEmployees,
+        ]) => {
+          if (!active) return;
+          setData({
+            transits,
+            pickups,
+            appointments,
+            reviews,
+            expiringDocuments,
+            openObservations,
+            currentLeavesNetworkWide,
+            allEmployees,
+          });
+          setLoading(false);
+        }
+      )
+      .catch(() => {
+        if (!active) return;
+        setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const all = data?.transits ?? [];
+  const allPickups = data?.pickups ?? [];
+  const allAppointments = data?.appointments ?? [];
+  const allReviews = data?.reviews ?? [];
 
   const filteredReviews = useMemo(() => {
     const sorted = [...allReviews].sort((a, b) =>
@@ -116,6 +187,14 @@ export default function AdminPage() {
             </Button>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (loading || data === null) {
+    return (
+      <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+        Chargement…
       </div>
     );
   }
@@ -510,19 +589,23 @@ export default function AdminPage() {
       <Separator />
 
       {/* === Documents à surveiller (réseau) === */}
-      <NetworkDocumentsSection />
+      <NetworkDocumentsSection docs={data.expiringDocuments} />
 
       {/* === Observations critiques (réseau) === */}
-      <NetworkCriticalObservationsSection />
+      <NetworkCriticalObservationsSection
+        observations={data.openObservations}
+      />
 
       {/* === Absences en cours (réseau) === */}
-      <NetworkCurrentLeavesSection />
+      <NetworkCurrentLeavesSection
+        leaves={data.currentLeavesNetworkWide}
+        employees={data.allEmployees}
+      />
     </div>
   );
 }
 
-function NetworkDocumentsSection() {
-  const docs = getExpiringDocuments();
+function NetworkDocumentsSection({ docs }: { docs: LegalDocument[] }) {
   const sorted = [...docs].sort((a, b) => {
     // priorité : expired > missing > expiring_soon
     const rank: Record<string, number> = {
@@ -585,8 +668,12 @@ function NetworkDocumentsSection() {
   );
 }
 
-function NetworkCriticalObservationsSection() {
-  const critical = getAllOpenObservations("high");
+function NetworkCriticalObservationsSection({
+  observations,
+}: {
+  observations: Observation[];
+}) {
+  const critical = observations;
   return (
     <section>
       <div className="mb-4 flex items-center justify-between gap-3">
@@ -643,11 +730,17 @@ function NetworkCriticalObservationsSection() {
   );
 }
 
-function NetworkCurrentLeavesSection() {
-  const leaves = getCurrentLeavesNetworkWide();
+function NetworkCurrentLeavesSection({
+  leaves,
+  employees,
+}: {
+  leaves: Leave[];
+  employees: Employee[];
+}) {
+  const employeeById = new Map(employees.map((e) => [e.id, e]));
   const grouped = Object.fromEntries(
-    AGENCIES.map((a) => [a.slug, [] as typeof leaves])
-  ) as Record<AgencySlug, typeof leaves>;
+    AGENCIES.map((a) => [a.slug, [] as Leave[]])
+  ) as Record<AgencySlug, Leave[]>;
   for (const l of leaves) grouped[l.agencyId]?.push(l);
 
   return (
@@ -690,7 +783,7 @@ function NetworkCurrentLeavesSection() {
                 ) : (
                   <ul className="space-y-2 text-sm">
                     {ls.map((l) => {
-                      const emp = getEmployee(l.employeeId);
+                      const emp = employeeById.get(l.employeeId);
                       return (
                         <li
                           key={l.id}

@@ -1,16 +1,15 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toast } from "sonner";
+import { AGENCIES, agencyBySlug } from "@/lib/mock";
 import {
-  AGENCIES,
-  agencyBySlug,
   addObservation,
   getObservationsByAgency,
   resolveObservation,
-} from "@/lib/mock";
+} from "@/lib/observations-db";
 import type {
   AgencySlug,
   Observation,
@@ -66,16 +65,33 @@ export default function AgencyObservationsPage({
   const canView = isPietro || isAgency(agencySlug);
   const canEdit = canView;
 
-  const [tick, setTick] = useState(0);
   const [filter, setFilter] = useState<Filter>("all");
   const [text, setText] = useState("");
   const [priority, setPriority] = useState<ObservationPriority>("normal");
+  const [submitting, setSubmitting] = useState(false);
 
-  const observations = useMemo(
-    () => getObservationsByAgency(agencySlug),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [agencySlug, tick]
-  );
+  const [loading, setLoading] = useState(true);
+  const [observations, setObservations] = useState<Observation[]>([]);
+
+  useEffect(() => {
+    if (!canView) return;
+    let cancelled = false;
+    setLoading(true);
+    getObservationsByAgency(agencySlug)
+      .then((data) => {
+        if (!cancelled) setObservations(data);
+      })
+      .catch(() => {
+        if (!cancelled)
+          toast.error("Erreur lors du chargement des observations.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [agencySlug, canView]);
 
   const open = useMemo(
     () =>
@@ -118,24 +134,56 @@ export default function AgencyObservationsPage({
     );
   }
 
-  function submit() {
+  async function submit() {
     const trimmed = text.trim();
     if (!trimmed) {
       toast.error("Le texte ne peut pas être vide.");
       return;
     }
     const author = isPietro ? "Pietro" : roleLabel;
-    addObservation(agencySlug, trimmed, author, priority);
-    toast.success("Observation ajoutée.");
-    setText("");
-    setPriority("normal");
-    setTick((t) => t + 1);
+    setSubmitting(true);
+    try {
+      const id = await addObservation(agencySlug, trimmed, author, priority);
+      const created: Observation = {
+        id,
+        agencyId: agencySlug,
+        text: trimmed,
+        authorName: author,
+        createdAt: new Date().toISOString(),
+        status: "open",
+        priority,
+      };
+      setObservations((prev) => [...prev, created]);
+      toast.success("Observation ajoutée.");
+      setText("");
+      setPriority("normal");
+    } catch {
+      toast.error("Erreur lors de l'ajout de l'observation.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
-  function resolve(id: string) {
-    resolveObservation(id);
-    toast.success("Observation marquée comme résolue.");
-    setTick((t) => t + 1);
+  async function resolve(id: string) {
+    try {
+      await resolveObservation(id);
+      setObservations((prev) =>
+        prev.map((o) =>
+          o.id === id
+            ? { ...o, status: "resolved", resolvedAt: new Date().toISOString() }
+            : o
+        )
+      );
+      toast.success("Observation marquée comme résolue.");
+    } catch {
+      toast.error("Erreur lors de la résolution de l'observation.");
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-muted-foreground">Chargement…</div>
+    );
   }
 
   const visible: { open: Observation[]; resolved: Observation[] } = {
@@ -200,7 +248,9 @@ export default function AgencyObservationsPage({
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={submit}>Ajouter</Button>
+              <Button onClick={submit} disabled={submitting}>
+                {submitting ? "Ajout…" : "Ajouter"}
+              </Button>
             </div>
           </CardContent>
         </Card>

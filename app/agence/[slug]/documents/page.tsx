@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useMemo, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { toast } from "sonner";
@@ -10,10 +10,12 @@ import {
   DOCUMENT_SECTION_LABEL,
   DOCUMENT_STATUS_LABEL,
   agencyBySlug,
+} from "@/lib/mock";
+import {
   getDocumentsByAgency,
   getDocumentsBySection,
   replaceDocument,
-} from "@/lib/mock";
+} from "@/lib/documents-db";
 import type {
   AgencySlug,
   DocumentSection,
@@ -81,13 +83,53 @@ export default function AgencyDocumentsPage({
   const canView = isPietro || isAgency(agencySlug);
   const canEdit = canView; // mêmes règles ici
 
-  // Tick local pour re-render après mutation in-memory
+  const SECTIONS: DocumentSection[] = ["administratif", "etat", "obligations"];
+
+  // Tick local pour recharger après mutation
   const [tick, setTick] = useState(0);
-  const docs = useMemo(
-    () => getDocumentsByAgency(agencySlug),
+  const [loading, setLoading] = useState(true);
+  const [docs, setDocs] = useState<LegalDocument[]>([]);
+  const [docsBySection, setDocsBySection] = useState<
+    Record<DocumentSection, LegalDocument[]>
+  >({ administratif: [], etat: [], obligations: [] });
+
+  useEffect(() => {
+    if (!canView) return;
+    let cancelled = false;
+    setLoading(true);
+    const sortDocs = (list: LegalDocument[]) =>
+      [...list].sort((a, b) => {
+        const ra = STATUS_ORDER.indexOf(a.status);
+        const rb = STATUS_ORDER.indexOf(b.status);
+        if (ra !== rb) return ra - rb;
+        return a.name.localeCompare(b.name);
+      });
+    Promise.all([
+      getDocumentsByAgency(agencySlug),
+      getDocumentsBySection(agencySlug, "administratif"),
+      getDocumentsBySection(agencySlug, "etat"),
+      getDocumentsBySection(agencySlug, "obligations"),
+    ])
+      .then(([all, administratif, etat, obligations]) => {
+        if (cancelled) return;
+        setDocs(all);
+        setDocsBySection({
+          administratif: sortDocs(administratif),
+          etat: sortDocs(etat),
+          obligations: sortDocs(obligations),
+        });
+      })
+      .catch(() => {
+        if (!cancelled) toast.error("Erreur lors du chargement des documents.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [agencySlug, tick]
-  );
+  }, [agencySlug, tick, canView]);
 
   const counters = useMemo(() => {
     const c: Record<DocumentStatus, number> = {
@@ -100,26 +142,14 @@ export default function AgencyDocumentsPage({
     return c;
   }, [docs]);
 
-  const SECTIONS: DocumentSection[] = ["administratif", "etat", "obligations"];
-
-  const docsBySection = useMemo(() => {
-    const sortDocs = (list: LegalDocument[]) =>
-      [...list].sort((a, b) => {
-        const ra = STATUS_ORDER.indexOf(a.status);
-        const rb = STATUS_ORDER.indexOf(b.status);
-        if (ra !== rb) return ra - rb;
-        return a.name.localeCompare(b.name);
-      });
-    return {
-      administratif: sortDocs(getDocumentsBySection(agencySlug, "administratif")),
-      etat: sortDocs(getDocumentsBySection(agencySlug, "etat")),
-      obligations: sortDocs(getDocumentsBySection(agencySlug, "obligations")),
-    } as Record<DocumentSection, LegalDocument[]>;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [agencySlug, tick]);
-
   if (!canView) {
     return <AccessDenied agencyName={agency.name} />;
+  }
+
+  if (loading) {
+    return (
+      <div className="py-20 text-center text-muted-foreground">Chargement…</div>
+    );
   }
 
   function handleDownload(d: LegalDocument) {
@@ -384,23 +414,31 @@ function ReplaceDocumentDialog({
   const [open, setOpen] = useState(false);
   const [fileName, setFileName] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
-  function submit() {
+  async function submit() {
     const finalFileName =
       fileName.trim() ||
       `${document.name
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")}-${new Date().getFullYear()}.pdf`;
-    replaceDocument(document.id, {
-      fileName: finalFileName,
-      uploadedAt: new Date().toISOString(),
-      expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
-    });
-    toast.success(`Document mis à jour : ${finalFileName}`);
-    setOpen(false);
-    setFileName("");
-    setExpiresAt("");
-    onReplaced();
+    setSubmitting(true);
+    try {
+      await replaceDocument(document.id, {
+        fileName: finalFileName,
+        uploadedAt: new Date().toISOString(),
+        expiresAt: expiresAt ? new Date(expiresAt).toISOString() : undefined,
+      });
+      toast.success(`Document mis à jour : ${finalFileName}`);
+      setOpen(false);
+      setFileName("");
+      setExpiresAt("");
+      onReplaced();
+    } catch {
+      toast.error("Erreur lors de la mise à jour du document.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -452,7 +490,9 @@ function ReplaceDocumentDialog({
           <DialogClose asChild>
             <Button variant="outline">Annuler</Button>
           </DialogClose>
-          <Button onClick={submit}>Valider</Button>
+          <Button onClick={submit} disabled={submitting}>
+            {submitting ? "Enregistrement…" : "Valider"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

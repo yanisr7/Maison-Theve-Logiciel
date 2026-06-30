@@ -1,13 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import {
-  AGENCIES,
-  getAllPickups,
-  PICKUP_STATUS_LABEL,
-} from "@/lib/mock";
+import { useEffect, useMemo, useState } from "react";
+import { AGENCIES, PICKUP_STATUS_LABEL } from "@/lib/mock";
+import { getAllPickups } from "@/lib/pickups-db";
 import { PickupCard } from "@/components/PickupCard";
-import type { AgencySlug, PickupStatus } from "@/lib/types";
+import type { AgencySlug, Pickup, PickupStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 
@@ -22,9 +19,20 @@ export default function ColisListPage() {
   const { role } = useRole();
   const [statusFilter, setStatusFilter] = useState<PickupStatus | "all">("all");
   const [agencyFilter, setAgencyFilter] = useState<AgencySlug | "all">("all");
+  const [allPickups, setAllPickups] = useState<Pickup[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    getAllPickups()
+      .then((d) => {
+        setAllPickups(d);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
 
   const pickups = useMemo(() => {
-    let all = getAllPickups();
+    let all = allPickups;
     if (role.kind === "agency") {
       all = all.filter((p) => p.destinationAgencyId === role.agencySlug);
     } else if (agencyFilter !== "all") {
@@ -44,7 +52,7 @@ export default function ColisListPage() {
         order[a.status] - order[b.status] ||
         (a.createdAt < b.createdAt ? 1 : -1)
     );
-  }, [statusFilter, agencyFilter, role]);
+  }, [statusFilter, agencyFilter, role, allPickups]);
 
   return (
     <div className="space-y-8">
@@ -114,7 +122,11 @@ export default function ColisListPage() {
         )}
       </div>
 
-      {pickups.length === 0 ? (
+      {loading ? (
+        <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+          Chargement…
+        </div>
+      ) : pickups.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Aucun bien confié correspondant.
         </div>
