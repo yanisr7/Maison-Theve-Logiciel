@@ -219,3 +219,18 @@ export type CasDeFigure = {
   createdAt: string;
   severity: CasSeverity;
 };
+
+// === Propositions d'amélioration du logiciel ===
+
+export type ProposalStatus = "new" | "planned" | "done" | "declined";
+
+export type Proposal = {
+  id: string;
+  title: string;
+  description: string;
+  authorName: string;
+  authorRole: "admin" | "agency";
+  agencySlug: AgencySlug | null;
+  status: ProposalStatus;
+  createdAt: string;
+};

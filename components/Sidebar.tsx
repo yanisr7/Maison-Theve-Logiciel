@@ -28,6 +28,7 @@ import {
   Users,
   ClipboardList,
   ShieldAlert,
+  Lightbulb,
 } from "lucide-react";
 
 type NavItem = {
@@ -53,6 +54,7 @@ export function Sidebar() {
     { href: "/transit", label: "Transit", icon: Truck },
     { href: "/colis", label: "Bien confié", icon: Package },
     { href: "/rdv", label: "RDV", icon: CalendarClock },
+    { href: "/propositions", label: "Améliorations", icon: Lightbulb },
   ];
   // Sous-pages d'agence : visibles quand un contexte agence est actif
   // (compte agence, ou admin ayant sélectionné une agence via le dropdown).
