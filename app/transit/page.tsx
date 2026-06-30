@@ -61,21 +61,36 @@ export default function TransitListPage() {
     return all;
   }, [filter, role, allTransits]);
 
+  const stats = useMemo(
+    () => ({
+      total: allTransits.length,
+      inTransit: allTransits.filter((t) => t.status === "in_transit").length,
+      toVerify: allTransits.filter((t) => t.status === "paid_unverified")
+        .length,
+    }),
+    [allTransits]
+  );
+
   return (
     <div className="space-y-8">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-[var(--gold)]">
             Module
           </p>
-          <h1 className="font-serif text-4xl text-foreground">Transit</h1>
-          <p className="mt-1 text-muted-foreground">
+          <h1 className="mt-1 text-4xl font-bold tracking-tight text-foreground">
+            Transit
+          </h1>
+          <p className="mt-2 text-muted-foreground">
             {isPietro
               ? "Tous les bons de transit du réseau."
               : "Bons impliquant votre agence."}
           </p>
         </div>
-        <Button asChild>
+        <Button
+          asChild
+          className="rounded-full bg-[var(--gold)] px-5 text-white shadow-sm transition-colors hover:bg-[var(--gold)]/90"
+        >
           <Link href="/transit/nouveau">
             <Plus className="size-4" />
             Nouveau bon
@@ -83,16 +98,45 @@ export default function TransitListPage() {
         </Button>
       </header>
 
+      {!loading && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Total des bons
+            </p>
+            <p className="mt-2 text-3xl font-bold text-foreground">
+              {stats.total}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              En transit
+            </p>
+            <p className="mt-2 text-3xl font-bold text-[var(--gold)]">
+              {stats.inTransit}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              À vérifier
+            </p>
+            <p className="mt-2 text-3xl font-bold text-foreground">
+              {stats.toVerify}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-2">
         {STATUSES.map((s) => (
           <button
             key={s}
             onClick={() => setFilter(s)}
             className={cn(
-              "rounded-full border px-3 py-1.5 text-xs transition-colors",
+              "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors",
               filter === s
-                ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
-                : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
+                ? "border-[var(--gold)] bg-[var(--gold)] text-white shadow-sm"
+                : "border-border bg-card text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
             )}
           >
             {s === "all" ? "Tous" : STATUS_LABEL[s]}
@@ -109,26 +153,26 @@ export default function TransitListPage() {
           Aucun bon correspondant.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border bg-card">
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
           <Table>
             <TableHeader>
-              <TableRow className="bg-foreground hover:bg-foreground">
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+              <TableRow className="border-b border-border bg-muted/50 hover:bg-muted/50">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   Référence
                 </TableHead>
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   Date
                 </TableHead>
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   Trajet
                 </TableHead>
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em] text-right">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground text-right">
                   Montant
                 </TableHead>
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em]">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
                   Statut
                 </TableHead>
-                <TableHead className="text-background text-[11px] uppercase tracking-[0.12em] text-right">
+                <TableHead className="text-[11px] uppercase tracking-[0.12em] text-muted-foreground text-right">
                   Action
                 </TableHead>
               </TableRow>
@@ -145,11 +189,11 @@ export default function TransitListPage() {
                   <TableRow
                     key={t.id}
                     className={cn(
-                      "hover:bg-muted/40",
+                      "border-b border-border/60 transition-colors hover:bg-muted/40",
                       concernsMe && "bg-[var(--gold)]/[0.04]"
                     )}
                   >
-                    <TableCell className="py-3 font-medium">
+                    <TableCell className="py-4 font-medium">
                       <div className="flex items-center gap-2">
                         <span className="text-foreground">{t.reference}</span>
                         <Link
@@ -163,7 +207,7 @@ export default function TransitListPage() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="py-3 text-muted-foreground">
+                    <TableCell className="py-4 text-muted-foreground">
                       <div className="flex flex-col gap-0.5">
                         <span>{formatDate(t.createdAt)}</span>
                         {t.createdBy && (
@@ -174,7 +218,7 @@ export default function TransitListPage() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="py-3 text-sm">
+                    <TableCell className="py-4 text-sm">
                       <span className="inline-flex items-center gap-1.5 text-foreground">
                         {agencyBySlug(t.from).name}
                         <ArrowRight
@@ -185,11 +229,11 @@ export default function TransitListPage() {
                       </span>
                     </TableCell>
 
-                    <TableCell className="py-3 text-right font-serif text-base text-[var(--gold)]">
+                    <TableCell className="py-4 text-right text-base font-semibold text-[var(--gold)]">
                       {formatAmount(t.amount)}
                     </TableCell>
 
-                    <TableCell className="py-3">
+                    <TableCell className="py-4">
                       <div className="flex flex-col gap-1">
                         <StatusChip status={t.status} />
                         {showShippingInfo && lastEvent && (
@@ -200,7 +244,7 @@ export default function TransitListPage() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="py-3 text-right">
+                    <TableCell className="py-4 text-right">
                       <div className="flex flex-col items-end gap-1.5">
                         {t.status === "in_transit" && (
                           <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-white">
@@ -211,7 +255,7 @@ export default function TransitListPage() {
                         <Button
                           asChild
                           size="sm"
-                          className="h-8 text-[11px] uppercase tracking-wider"
+                          className="h-8 rounded-full bg-[var(--gold)] px-4 text-[11px] uppercase tracking-wider text-white hover:bg-[var(--gold)]/90"
                         >
                           <Link href={`/transit/${t.id}`}>Voir en détail</Link>
                         </Button>

@@ -39,7 +39,7 @@ import type {
   CasDeFigure,
 } from "@/lib/types";
 import { useRole } from "@/lib/role-context";
-import { relativeDate } from "@/lib/utils";
+import { relativeDate, formatAmount } from "@/lib/utils";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -154,6 +154,15 @@ export default function AgencePage({
   const sent = transits.filter((t) => t.from === agencySlug);
   const received = transits.filter((t) => t.to === agencySlug);
 
+  // Transits « en cours » = ni clôturés ni refusés. Montant total mis en avant.
+  const inProgressTransits = transits.filter(
+    (t) => t.status !== "closed" && t.status !== "refused"
+  );
+  const inProgressTotal = inProgressTransits.reduce(
+    (sum, t) => sum + t.amount,
+    0
+  );
+
   const allPickups = data.pickups.filter(
     (p) => p.destinationAgencyId === agencySlug
   );
@@ -205,53 +214,116 @@ export default function AgencePage({
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 2);
 
+  const quickLinks = [
+    {
+      href: `/agence/${agencySlug}/documents`,
+      label: "Documents",
+      desc: `${docsOk} à jour${docsAttention > 0 ? ` · ${docsAttention} à voir` : ""}`,
+      icon: FileText,
+      alert: docsAlert > 0,
+    },
+    {
+      href: `/agence/${agencySlug}/equipe`,
+      label: "Équipe",
+      desc: `${employees.length} salarié${employees.length > 1 ? "s" : ""}`,
+      icon: Users,
+      alert: false,
+    },
+    {
+      href: `/agence/${agencySlug}/observations`,
+      label: "Observations",
+      desc: `${openObservations.length} ouverte${openObservations.length > 1 ? "s" : ""}`,
+      icon: ClipboardList,
+      alert: hasHighPriorityObs,
+    },
+    {
+      href: `/agence/${agencySlug}/cas-de-figure`,
+      label: "Cas de figure",
+      desc: `${casList.length} référencé${casList.length > 1 ? "s" : ""}`,
+      icon: ShieldAlert,
+      alert: casAlert > 0,
+    },
+  ];
+
   return (
-    <div className="space-y-10">
-      <header className="flex flex-col gap-2">
-        <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
-          Agence
-        </p>
-        <h1 className="font-serif text-4xl text-foreground">{agency.name}</h1>
-        <p className="text-muted-foreground">{agency.address}</p>
-        <p className="flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
-          Responsable&nbsp;:{" "}
-          <span className="text-foreground">{agency.manager}</span>
-          <span>·</span>
-          Vous êtes connecté en{" "}
-          <span className="font-medium text-[var(--gold)]">{roleLabel}</span>
-          {isPietro && (
-            <Badge variant="secondary" className="ml-1">
-              vue admin
-            </Badge>
-          )}
-        </p>
+    <div className="space-y-12">
+      <header className="space-y-6">
+        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+          <p className="text-xs uppercase tracking-[0.18em] text-[var(--gold)]">
+            Agence
+          </p>
+          <h1 className="mt-2 font-serif text-4xl font-normal text-foreground">
+            {agency.name}
+          </h1>
+          <p className="mt-1 text-muted-foreground">{agency.address}</p>
+          <p className="mt-3 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
+            Responsable&nbsp;:{" "}
+            <span className="text-foreground">{agency.manager}</span>
+            <span className="text-border">·</span>
+            Connecté en{" "}
+            <span className="font-medium text-[var(--gold)]">{roleLabel}</span>
+            {isPietro && (
+              <Badge variant="secondary" className="ml-1">
+                vue admin
+              </Badge>
+            )}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {quickLinks.map((q) => (
+            <Link
+              key={q.href}
+              href={q.href}
+              className="group relative flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:border-[var(--gold)] hover:shadow-md"
+            >
+              <span className="flex size-10 items-center justify-center rounded-xl bg-[var(--gold)]/10 text-[var(--gold)]">
+                <q.icon className="size-5" aria-hidden />
+              </span>
+              <div>
+                <p className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                  {q.label}
+                  {q.alert && (
+                    <span className="size-2 rounded-full bg-red-500" aria-hidden />
+                  )}
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{q.desc}</p>
+              </div>
+              <ArrowRight className="absolute right-5 top-5 size-4 text-muted-foreground/40 transition group-hover:translate-x-0.5 group-hover:text-[var(--gold)]" />
+            </Link>
+          ))}
+        </div>
       </header>
 
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl text-foreground">
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-serif text-2xl font-normal text-foreground">
             Transit récent
           </h2>
           <Link
             href="/transit"
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
-        {transits.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
-            Aucun transit pour cette agence.
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {transits.slice(0, 4).map((t) => (
-              <TransitCard key={t.id} transit={t} />
-            ))}
-          </div>
-        )}
 
-        <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">
+        <div className="rounded-2xl border border-border bg-[var(--gold)]/[0.06] p-5 shadow-sm">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            Montant total des transits en cours
+          </p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-3">
+            <span className="text-3xl font-bold tabular-nums text-[var(--gold)]">
+              {formatAmount(inProgressTotal)}
+            </span>
+            <span className="text-sm text-muted-foreground">
+              {inProgressTransits.length} bon
+              {inProgressTransits.length > 1 ? "s" : ""} en cours
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <Stat label="Envois" value={sent.length} />
           <Stat label="Réceptions" value={received.length} />
           <Stat
@@ -265,13 +337,25 @@ export default function AgencePage({
             }
           />
         </div>
+
+        {transits.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
+            Aucun transit pour cette agence.
+          </div>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2">
+            {transits.slice(0, 4).map((t) => (
+              <TransitCard key={t.id} transit={t} />
+            ))}
+          </div>
+        )}
       </section>
 
       <Separator />
 
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl text-foreground">
+          <h2 className="flex items-center font-serif text-2xl font-normal text-foreground">
             Colis point relais
             {openPickups.length > 0 && (
               <Badge className="ml-3 bg-[var(--gold)] text-primary-foreground">
@@ -281,13 +365,13 @@ export default function AgencePage({
           </h2>
           <Link
             href="/colis"
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {recentPickups.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
             Aucun colis pour cette agence.
           </div>
         ) : (
@@ -301,7 +385,7 @@ export default function AgencePage({
 
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl text-foreground">
+          <h2 className="flex items-center font-serif text-2xl font-normal text-foreground">
             RDV du jour
             {todaysAppointments.length > 0 && (
               <Badge className="ml-3 bg-[var(--gold)] text-primary-foreground">
@@ -311,13 +395,13 @@ export default function AgencePage({
           </h2>
           <Link
             href="/rdv"
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {todaysAppointments.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
             Aucun RDV aujourd'hui.
           </div>
         ) : (
@@ -331,13 +415,15 @@ export default function AgencePage({
 
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-serif text-2xl text-foreground">Avis clients</h2>
+          <h2 className="font-serif text-2xl font-normal text-foreground">
+            Avis clients
+          </h2>
           <span className="text-xs text-muted-foreground">
             {agencyReviews.length} avis au total
           </span>
         </div>
         {recentReviews.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-8 text-center text-muted-foreground">
             Aucun avis pour le moment.
           </div>
         ) : (
@@ -354,7 +440,7 @@ export default function AgencePage({
       {/* === Documents légaux === */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <h2 className="flex items-center gap-2 font-serif text-2xl font-normal text-foreground">
             <FileText className="size-5 text-[var(--gold)]" aria-hidden />
             Documents légaux
             {docsAlert > 0 && (
@@ -365,12 +451,12 @@ export default function AgencePage({
           </h2>
           <Link
             href={`/agence/${agencySlug}/documents`}
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
-        <Card>
+        <Card className="rounded-2xl border-border shadow-sm">
           <CardContent className="space-y-3 pt-6 text-sm">
             <p className="text-muted-foreground">
               <span className="font-medium text-foreground">{docsOk}</span>{" "}
@@ -392,7 +478,7 @@ export default function AgencePage({
               .map((d) => (
                 <div
                   key={d.id}
-                  className="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/20 p-3"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/30 p-3"
                 >
                   <p className="text-sm text-foreground">{d.name}</p>
                   <DocumentStatusChip status={d.status} />
@@ -411,7 +497,7 @@ export default function AgencePage({
       {/* === Équipe === */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <h2 className="flex items-center gap-2 font-serif text-2xl font-normal text-foreground">
             <Users className="size-5 text-[var(--gold)]" aria-hidden />
             Équipe
             {currentLeaves.length > 0 && (
@@ -423,12 +509,12 @@ export default function AgencePage({
           </h2>
           <Link
             href={`/agence/${agencySlug}/equipe`}
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
-        <Card>
+        <Card className="rounded-2xl border-border shadow-sm">
           <CardContent className="space-y-4 pt-6 text-sm">
             <p className="text-muted-foreground">
               <span className="font-medium text-foreground">
@@ -442,7 +528,7 @@ export default function AgencePage({
                 Aucun salarié rattaché à cette agence.
               </p>
             ) : (
-              <ul className="divide-y divide-border rounded-lg border border-border">
+              <ul className="divide-y divide-border overflow-hidden rounded-xl border border-border">
                 {employees.map((e) => (
                   <li
                     key={e.id}
@@ -506,7 +592,7 @@ export default function AgencePage({
       {/* === Observations === */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <h2 className="flex items-center gap-2 font-serif text-2xl font-normal text-foreground">
             <ClipboardList
               className="size-5 text-[var(--gold)]"
               aria-hidden
@@ -526,13 +612,13 @@ export default function AgencePage({
           </h2>
           <Link
             href={`/agence/${agencySlug}/observations`}
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {previewObservations.length === 0 ? (
-          <Card>
+          <Card className="rounded-2xl border-border shadow-sm">
             <CardContent className="pt-6 text-sm text-muted-foreground">
               Aucune observation ouverte pour cette agence.
             </CardContent>
@@ -540,7 +626,7 @@ export default function AgencePage({
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {previewObservations.map((o) => (
-              <Card key={o.id}>
+              <Card key={o.id} className="rounded-2xl border-border shadow-sm">
                 <CardHeader className="flex flex-row items-start justify-between gap-3">
                   <div className="flex flex-wrap items-center gap-2">
                     <ObservationStatusChip status={o.status} />
@@ -568,7 +654,7 @@ export default function AgencePage({
       {/* === Cas de figure === */}
       <section>
         <div className="mb-4 flex items-center justify-between">
-          <h2 className="flex items-center gap-2 font-serif text-2xl text-foreground">
+          <h2 className="flex items-center gap-2 font-serif text-2xl font-normal text-foreground">
             <ShieldAlert
               className="size-5 text-[var(--gold)]"
               aria-hidden
@@ -588,13 +674,13 @@ export default function AgencePage({
           </h2>
           <Link
             href={`/agence/${agencySlug}/cas-de-figure`}
-            className="text-sm font-medium text-[var(--gold)] hover:underline"
+            className="inline-flex items-center gap-1 text-sm font-medium text-[var(--gold)] hover:underline"
           >
-            Voir tout →
+            Voir tout <ArrowRight className="size-3.5" />
           </Link>
         </div>
         {previewCas.length === 0 ? (
-          <Card>
+          <Card className="rounded-2xl border-border shadow-sm">
             <CardContent className="pt-6 text-sm text-muted-foreground">
               Aucun cas de figure signalé pour cette agence.
             </CardContent>
@@ -602,7 +688,7 @@ export default function AgencePage({
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {previewCas.map((c) => (
-              <Card key={c.id}>
+              <Card key={c.id} className="rounded-2xl border-border shadow-sm">
                 <CardHeader className="flex flex-row items-start justify-between gap-3">
                   <Badge variant="outline" className="text-[11px]">
                     {CAS_TYPE_LABEL[c.type]}
@@ -639,12 +725,12 @@ export default function AgencePage({
 
 function Stat({ label, value }: { label: string; value: number }) {
   return (
-    <Card className="gap-1 py-4">
-      <CardContent className="space-y-1 px-4">
+    <Card className="gap-1 rounded-2xl border-border py-5 shadow-sm">
+      <CardContent className="space-y-1 px-5">
         <p className="text-xs uppercase tracking-wide text-muted-foreground">
           {label}
         </p>
-        <p className="font-serif text-2xl text-[var(--gold)]">{value}</p>
+        <p className="font-serif text-3xl text-[var(--gold)]">{value}</p>
       </CardContent>
     </Card>
   );

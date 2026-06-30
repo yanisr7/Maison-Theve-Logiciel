@@ -4,11 +4,13 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-gold: #C9A84C;
-  --color-gold-light: #E8CC84;
-  --color-gold-dark: #A88A38;
+  /* Refonte 2026-06-30 : accent BLEU (style Shopeers). Les noms de tokens "gold"
+     sont conservés pour compatibilité — ils portent désormais le bleu. */
+  --color-gold: #2563EB;
+  --color-gold-light: #60A5FA;
+  --color-gold-dark: #1D4ED8;
 
-  --font-serif: "DM Serif Display", serif;
+  --font-serif: "DM Sans", sans-serif;
   --font-sans: "DM Sans", sans-serif;
 }
 
@@ -21,10 +23,10 @@
  *   refused = rouge
  */
 :root {
-  /* Brand */
-  --gold: #C9A84C;
-  --gold-light: #E8CC84;
-  --gold-dark: #A88A38;
+  /* Brand — accent bleu (refonte) */
+  --gold: #2563EB;
+  --gold-light: #60A5FA;
+  --gold-dark: #1D4ED8;
 
   /* shadcn — light only */
   --background: hsl(0 0% 100%);
@@ -36,37 +38,37 @@
   --popover: hsl(0 0% 100%);
   --popover-foreground: hsl(20 14% 12%);
 
-  /* Primary = or */
-  --primary: hsl(43 53% 54%);
-  --primary-foreground: hsl(20 14% 12%);
+  /* Primary = bleu */
+  --primary: hsl(221 83% 53%);
+  --primary-foreground: hsl(0 0% 100%);
 
-  --secondary: hsl(40 30% 96%);
-  --secondary-foreground: hsl(20 14% 12%);
+  --secondary: hsl(220 20% 96%);
+  --secondary-foreground: hsl(222 30% 16%);
 
-  --muted: hsl(40 15% 96%);
-  --muted-foreground: hsl(20 8% 42%);
+  --muted: hsl(220 16% 96%);
+  --muted-foreground: hsl(220 9% 46%);
 
-  --accent: hsl(43 53% 96%);
-  --accent-foreground: hsl(20 14% 12%);
+  --accent: hsl(221 83% 96%);
+  --accent-foreground: hsl(221 70% 40%);
 
   --destructive: hsl(0 70% 48%);
   --destructive-foreground: hsl(0 0% 100%);
 
-  --border: hsl(30 10% 90%);
-  --input: hsl(30 10% 90%);
-  --ring: hsl(43 53% 54%);
+  --border: hsl(220 13% 91%);
+  --input: hsl(220 13% 91%);
+  --ring: hsl(221 83% 53%);
 
-  --radius: 0.625rem;
+  --radius: 0.75rem;
 
-  /* Sidebar (laissé pour compatibilité shadcn) */
-  --sidebar: hsl(0 0% 100%);
-  --sidebar-foreground: hsl(20 14% 12%);
-  --sidebar-primary: hsl(43 53% 54%);
-  --sidebar-primary-foreground: hsl(20 14% 12%);
-  --sidebar-accent: hsl(43 53% 96%);
-  --sidebar-accent-foreground: hsl(20 14% 12%);
-  --sidebar-border: hsl(30 10% 90%);
-  --sidebar-ring: hsl(43 53% 54%);
+  /* Sidebar — fond très clair, accent bleu */
+  --sidebar: hsl(220 33% 98%);
+  --sidebar-foreground: hsl(222 30% 16%);
+  --sidebar-primary: hsl(221 83% 53%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(221 83% 94%);
+  --sidebar-accent-foreground: hsl(221 70% 40%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(221 83% 53%);
 }
 
 @theme inline {
@@ -126,7 +128,9 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: "DM Serif Display", serif;
+    font-family: "DM Sans", system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     color: var(--foreground);
   }
 
@@ -144,5 +148,6 @@
   .text-gold { color: var(--gold); }
   .bg-gold { background-color: var(--gold); }
   .border-gold { border-color: var(--gold); }
-  .font-serif { font-family: "DM Serif Display", serif; }
+  /* La marque passe en sans moderne — l'utilitaire reste pour compat. */
+  .font-serif { font-family: "DM Sans", system-ui, sans-serif; font-weight: 700; letter-spacing: -0.02em; }
 }

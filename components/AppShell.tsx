@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useRole } from "@/lib/role-context";
-import { Nav } from "./Nav";
+import { Sidebar } from "./Sidebar";
 
 function FullScreen({ children }: { children: React.ReactNode }) {
   return (
@@ -31,9 +31,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (status === "anon") return <FullScreen>Redirection…</FullScreen>;
 
   return (
-    <>
-      <Nav />
-      <main className="mx-auto max-w-7xl px-6 py-10">{children}</main>
-    </>
+    <div className="flex min-h-screen">
+      <Sidebar />
+      <div className="min-w-0 flex-1 bg-muted/30">
+        <main className="mx-auto max-w-6xl px-6 py-8">{children}</main>
+      </div>
+    </div>
   );
 }

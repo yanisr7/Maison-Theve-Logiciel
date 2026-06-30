@@ -18,15 +18,24 @@ type RoleContextValue = {
   status: AuthStatus;
   // Non-null pour les consommateurs : les pages ne sont rendues qu'une fois
   // authentifié (cf. AppShell), donc `role` y est toujours réel.
+  // `role` est le rôle EFFECTIF : pour un admin qui « voit en tant que » une
+  // agence, il vaut { kind: "agency", ... }.
   role: Role;
   email: string | null;
   isPietro: boolean;
   isAgency: (slug: AgencySlug) => boolean;
   roleLabel: string;
   signOut: () => Promise<void>;
+  // Compte réellement administrateur (indépendant du « voir en tant que »).
+  isAdminAccount: boolean;
+  // Agence visualisée par l'admin (null = « Toutes les agences » / Vue 360°).
+  viewAs: AgencySlug | null;
+  setViewAs: (slug: AgencySlug | null) => void;
 };
 
 const RoleContext = createContext<RoleContextValue | null>(null);
+
+const VIEWAS_KEY = "mtl.viewAs";
 
 // Fallback technique utilisé uniquement avant chargement du profil (jamais rendu
 // car AppShell affiche un écran de chargement / redirige vers /login).
@@ -45,6 +54,27 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<Role | null>(null);
   const [email, setEmail] = useState<string | null>(null);
   const [fullName, setFullName] = useState<string | null>(null);
+  const [viewAs, setViewAsState] = useState<AgencySlug | null>(null);
+
+  // Restaure le contexte « voir en tant que » (admin) depuis le navigateur.
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(VIEWAS_KEY);
+      if (raw) setViewAsState(raw as AgencySlug);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const setViewAs = useCallback((slug: AgencySlug | null) => {
+    setViewAsState(slug);
+    try {
+      if (slug) window.localStorage.setItem(VIEWAS_KEY, slug);
+      else window.localStorage.removeItem(VIEWAS_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const loadProfile = useCallback(async (userId: string, userEmail: string | null) => {
     const { data } = await supabase
@@ -100,30 +130,36 @@ export function RoleProvider({ children }: { children: React.ReactNode }) {
     setRole(null);
     setEmail(null);
     setFullName(null);
+    setViewAs(null);
     setStatus("anon");
-  }, []);
+  }, [setViewAs]);
 
   const value = useMemo<RoleContextValue>(() => {
-    const isPietro = role?.kind === "admin";
-    const roleLabel =
+    const isAdminAccount = role?.kind === "admin";
+    // Rôle effectif : un admin qui « voit en tant que » une agence se comporte
+    // comme cette agence dans toute l'appli.
+    const effectiveRole: Role | null =
       role == null
-        ? ""
-        : role.kind === "admin"
-          ? fullName ?? "Pietro (Admin)"
-          : fullName ??
-            AGENCIES.find((a) => a.slug === role.agencySlug)?.name ??
-            role.agencySlug;
+        ? null
+        : isAdminAccount && viewAs
+          ? { kind: "agency", agencySlug: viewAs }
+          : role;
+    const isPietro = effectiveRole?.kind === "admin";
+    const roleLabel = fullName ?? (isAdminAccount ? "Pietro (Admin)" : "");
     return {
       status,
-      role: role ?? FALLBACK_ROLE,
+      role: effectiveRole ?? FALLBACK_ROLE,
       email,
       isPietro,
       isAgency: (slug: AgencySlug) =>
-        role?.kind === "agency" && role.agencySlug === slug,
+        effectiveRole?.kind === "agency" && effectiveRole.agencySlug === slug,
       roleLabel,
       signOut,
+      isAdminAccount: !!isAdminAccount,
+      viewAs,
+      setViewAs,
     };
-  }, [role, email, fullName, status, signOut]);
+  }, [role, email, fullName, status, signOut, viewAs, setViewAs]);
 
   return <RoleContext.Provider value={value}>{children}</RoleContext.Provider>;
 }
