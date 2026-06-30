@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { AGENCIES, APPOINTMENT_STATUS_LABEL } from "@/lib/mock";
-import { getAllAppointments } from "@/lib/appointments-db";
+import { useEffect, useState } from "react";
+import { APPOINTMENT_STATUS_LABEL } from "@/lib/mock";
+import { getAppointmentsPage } from "@/lib/appointments-db";
 import { AppointmentCard } from "@/components/AppointmentCard";
-import type {
-  AgencySlug,
-  Appointment,
-  AppointmentStatus,
-} from "@/lib/types";
+import type { Appointment, AppointmentStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/lib/role-context";
 
@@ -20,76 +16,49 @@ const STATUSES: (AppointmentStatus | "all")[] = [
   "rescheduled",
 ];
 
-type DateFilter = "all" | "today" | "week";
-
-function isSameDay(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
-}
-
-function isThisWeek(d: Date, ref: Date) {
-  const start = new Date(ref);
-  start.setHours(0, 0, 0, 0);
-  start.setDate(ref.getDate() - ref.getDay()); // dimanche
-  const end = new Date(start);
-  end.setDate(start.getDate() + 7);
-  return d >= start && d < end;
-}
+const PAGE_SIZE = 30;
 
 export default function RdvListPage() {
   const { role } = useRole();
   const [statusFilter, setStatusFilter] = useState<AppointmentStatus | "all">(
     "all"
   );
-  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
-  const [agencyFilter, setAgencyFilter] = useState<AgencySlug | "all">("all");
-  const [allAppointments, setAllAppointments] = useState<Appointment[]>([]);
+  const [rows, setRows] = useState<Appointment[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  // Reset à la page 1 quand le filtre de statut change.
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter]);
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
-    getAllAppointments()
-      .then((data) => {
-        if (active) setAllAppointments(data);
+    const isFirstPage = page === 1;
+    if (isFirstPage) setLoading(true);
+    else setLoadingMore(true);
+
+    const status = statusFilter === "all" ? undefined : statusFilter;
+    getAppointmentsPage(page, PAGE_SIZE, status)
+      .then((res) => {
+        if (!active) return;
+        setTotal(res.total);
+        setRows((prev) => (isFirstPage ? res.rows : [...prev, ...res.rows]));
       })
       .finally(() => {
-        if (active) setLoading(false);
+        if (!active) return;
+        setLoading(false);
+        setLoadingMore(false);
       });
+
     return () => {
       active = false;
     };
-  }, []);
+  }, [page, statusFilter]);
 
-  const appointments = useMemo(() => {
-    let all = allAppointments;
-    if (role.kind === "agency") {
-      all = all.filter((a) => a.agencyId === role.agencySlug);
-    } else if (agencyFilter !== "all") {
-      all = all.filter((a) => a.agencyId === agencyFilter);
-    }
-    if (statusFilter !== "all") {
-      all = all.filter((a) => a.status === statusFilter);
-    }
-    const now = new Date();
-    if (dateFilter === "today") {
-      all = all.filter((a) =>
-        isSameDay(new Date(a.rescheduledAt ?? a.scheduledAt), now)
-      );
-    } else if (dateFilter === "week") {
-      all = all.filter((a) =>
-        isThisWeek(new Date(a.rescheduledAt ?? a.scheduledAt), now)
-      );
-    }
-    return [...all].sort((a, b) => {
-      const da = new Date(a.rescheduledAt ?? a.scheduledAt).getTime();
-      const db = new Date(b.rescheduledAt ?? b.scheduledAt).getTime();
-      return da - db;
-    });
-  }, [allAppointments, statusFilter, dateFilter, agencyFilter, role]);
+  const hasMore = rows.length < total;
 
   return (
     <div className="space-y-8">
@@ -122,80 +91,55 @@ export default function RdvListPage() {
             </button>
           ))}
         </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-            Date
-          </span>
-          {(
-            [
-              { v: "all" as const, label: "Toutes" },
-              { v: "today" as const, label: "Aujourd'hui" },
-              { v: "week" as const, label: "Cette semaine" },
-            ]
-          ).map((d) => (
-            <button
-              key={d.v}
-              onClick={() => setDateFilter(d.v)}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs transition-colors",
-                dateFilter === d.v
-                  ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
-                  : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
-              )}
-            >
-              {d.label}
-            </button>
-          ))}
-        </div>
-
-        {role.kind === "admin" && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
-              Agence
-            </span>
-            <button
-              onClick={() => setAgencyFilter("all")}
-              className={cn(
-                "rounded-full border px-3 py-1.5 text-xs transition-colors",
-                agencyFilter === "all"
-                  ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
-                  : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
-              )}
-            >
-              Toutes
-            </button>
-            {AGENCIES.map((a) => (
-              <button
-                key={a.slug}
-                onClick={() => setAgencyFilter(a.slug)}
-                className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs transition-colors",
-                  agencyFilter === a.slug
-                    ? "border-[var(--gold)] bg-[var(--gold)]/10 text-foreground"
-                    : "border-border text-muted-foreground hover:border-[var(--gold)] hover:text-foreground"
-                )}
-              >
-                {a.name}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {loading ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Chargement…
         </div>
-      ) : appointments.length === 0 ? (
+      ) : rows.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border bg-muted/30 p-12 text-center text-muted-foreground">
           Aucun RDV correspondant.
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {appointments.map((a) => (
-            <AppointmentCard key={a.id} appointment={a} />
-          ))}
+        <div className="space-y-6">
+          <div className="grid gap-4 md:grid-cols-2">
+            {rows.map((a) => {
+              const concernsMe =
+                role.kind === "agency" && a.agencyId === role.agencySlug;
+              return (
+                <div
+                  key={a.id}
+                  className={cn(
+                    "rounded-xl transition-colors",
+                    concernsMe && "ring-1 ring-[var(--gold)]/40"
+                  )}
+                >
+                  <AppointmentCard appointment={a} />
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-xs text-muted-foreground">
+              {rows.length} / {total}
+            </p>
+            {hasMore && (
+              <button
+                onClick={() => setPage((p) => p + 1)}
+                disabled={loadingMore}
+                className={cn(
+                  "rounded-full border border-[var(--gold)] px-5 py-2 text-xs uppercase tracking-[0.12em] transition-colors",
+                  loadingMore
+                    ? "cursor-not-allowed text-muted-foreground"
+                    : "text-foreground hover:bg-[var(--gold)]/10"
+                )}
+              >
+                {loadingMore ? "Chargement…" : "Voir plus"}
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

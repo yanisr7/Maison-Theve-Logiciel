@@ -49,6 +49,37 @@ export async function getAllTransits(): Promise<Transit[]> {
   return (data as TransitRow[]).map(mapRow);
 }
 
+// Transits concernant une agence (émetteur OU destinataire) — filtré côté base.
+export async function getTransitsByAgency(
+  agency: AgencySlug
+): Promise<Transit[]> {
+  const { data, error } = await supabase
+    .from("transits")
+    .select("*")
+    .or(`from_agency.eq.${agency},to_agency.eq.${agency}`)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as TransitRow[]).map(mapRow);
+}
+
+// Page de transits (pagination côté base) + filtre statut optionnel.
+export async function getTransitsPage(
+  page: number,
+  pageSize: number,
+  status?: Transit["status"]
+): Promise<{ rows: Transit[]; total: number }> {
+  const from = (page - 1) * pageSize;
+  let q = supabase
+    .from("transits")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+  if (status) q = q.eq("status", status);
+  const { data, count, error } = await q;
+  if (error) throw error;
+  return { rows: (data as TransitRow[]).map(mapRow), total: count ?? 0 };
+}
+
 export async function getTransit(id: string): Promise<Transit | null> {
   const { data, error } = await supabase
     .from("transits")

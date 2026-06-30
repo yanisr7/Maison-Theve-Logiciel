@@ -41,6 +41,37 @@ export async function getAllPickups(): Promise<Pickup[]> {
   return (data as PickupRow[]).map(mapRow);
 }
 
+// Biens confiés destinés à une agence — filtré côté base.
+export async function getPickupsByAgency(
+  agency: AgencySlug
+): Promise<Pickup[]> {
+  const { data, error } = await supabase
+    .from("pickups")
+    .select("*")
+    .eq("destination_agency", agency)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as PickupRow[]).map(mapRow);
+}
+
+// Page de biens confiés (pagination côté base) + filtre statut optionnel.
+export async function getPickupsPage(
+  page: number,
+  pageSize: number,
+  status?: PickupStatus
+): Promise<{ rows: Pickup[]; total: number }> {
+  const from = (page - 1) * pageSize;
+  let q = supabase
+    .from("pickups")
+    .select("*", { count: "exact" })
+    .order("created_at", { ascending: false })
+    .range(from, from + pageSize - 1);
+  if (status) q = q.eq("status", status);
+  const { data, count, error } = await q;
+  if (error) throw error;
+  return { rows: (data as PickupRow[]).map(mapRow), total: count ?? 0 };
+}
+
 export async function getPickup(id: string): Promise<Pickup | null> {
   const { data, error } = await supabase
     .from("pickups")

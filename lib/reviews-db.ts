@@ -35,6 +35,19 @@ export async function getAllReviews(): Promise<Review[]> {
   return (data as ReviewRow[]).map(mapRow);
 }
 
+// Avis d'une agence — filtré côté base.
+export async function getReviewsByAgency(
+  agency: AgencySlug
+): Promise<Review[]> {
+  const { data, error } = await supabase
+    .from("reviews")
+    .select("*")
+    .eq("agency_id", agency)
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return (data as ReviewRow[]).map(mapRow);
+}
+
 export async function addReview(
   input: Omit<Review, "id" | "createdAt">
 ): Promise<Review> {

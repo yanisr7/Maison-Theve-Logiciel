@@ -79,62 +79,64 @@ export async function getEmployee(id: string): Promise<Employee | null> {
 
 // --- Leaves ---
 
-async function fetchLeaves(): Promise<Leave[]> {
+export async function getAllLeaves(): Promise<Leave[]> {
   const { data, error } = await supabase.from("leaves").select("*");
   if (error) throw error;
   return (data as LeaveRow[]).map(mapLeave);
 }
 
-export async function getAllLeaves(): Promise<Leave[]> {
-  return fetchLeaves();
-}
-
 export async function getLeavesByAgency(
   agencyId: AgencySlug
 ): Promise<Leave[]> {
-  const all = await fetchLeaves();
-  return all.filter((l) => l.agencyId === agencyId);
+  const { data, error } = await supabase
+    .from("leaves")
+    .select("*")
+    .eq("agency_id", agencyId);
+  if (error) throw error;
+  return (data as LeaveRow[]).map(mapLeave);
 }
 
+// Congés en cours : starts_at <= now <= ends_at (filtré côté base).
 export async function getCurrentLeavesByAgency(
   agencyId: AgencySlug
 ): Promise<Leave[]> {
-  const now = Date.now();
-  const all = await fetchLeaves();
-  return all.filter(
-    (l) =>
-      l.agencyId === agencyId &&
-      new Date(l.startsAt).getTime() <= now &&
-      new Date(l.endsAt).getTime() >= now
-  );
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("leaves")
+    .select("*")
+    .eq("agency_id", agencyId)
+    .lte("starts_at", now)
+    .gte("ends_at", now);
+  if (error) throw error;
+  return (data as LeaveRow[]).map(mapLeave);
 }
 
 export async function getCurrentLeavesNetworkWide(): Promise<Leave[]> {
-  const now = Date.now();
-  const all = await fetchLeaves();
-  return all.filter(
-    (l) =>
-      new Date(l.startsAt).getTime() <= now &&
-      new Date(l.endsAt).getTime() >= now
-  );
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from("leaves")
+    .select("*")
+    .lte("starts_at", now)
+    .gte("ends_at", now);
+  if (error) throw error;
+  return (data as LeaveRow[]).map(mapLeave);
 }
 
 export async function getUpcomingLeavesByAgency(
   agencyId: AgencySlug,
   daysAhead = 14
 ): Promise<Leave[]> {
-  const now = Date.now();
-  const horizon = now + daysAhead * 24 * 60 * 60 * 1000;
-  const all = await fetchLeaves();
-  return all
-    .filter((l) => {
-      if (l.agencyId !== agencyId) return false;
-      const start = new Date(l.startsAt).getTime();
-      const end = new Date(l.endsAt).getTime();
-      return end >= now && start <= horizon;
-    })
-    .sort(
-      (a, b) =>
-        new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
-    );
+  const now = new Date();
+  const horizon = new Date(
+    now.getTime() + daysAhead * 24 * 60 * 60 * 1000
+  ).toISOString();
+  const { data, error } = await supabase
+    .from("leaves")
+    .select("*")
+    .eq("agency_id", agencyId)
+    .gte("ends_at", now.toISOString())
+    .lte("starts_at", horizon)
+    .order("starts_at", { ascending: true });
+  if (error) throw error;
+  return (data as LeaveRow[]).map(mapLeave);
 }

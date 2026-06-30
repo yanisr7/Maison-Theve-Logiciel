@@ -9,10 +9,10 @@ import {
   EMPLOYEE_ROLE_LABEL,
   CAS_TYPE_LABEL,
 } from "@/lib/mock";
-import { getAllTransits } from "@/lib/transits-db";
-import { getAllPickups } from "@/lib/pickups-db";
-import { getAllAppointments } from "@/lib/appointments-db";
-import { getAllReviews } from "@/lib/reviews-db";
+import { getTransitsByAgency } from "@/lib/transits-db";
+import { getPickupsByAgency } from "@/lib/pickups-db";
+import { getAppointmentsByAgency } from "@/lib/appointments-db";
+import { getReviewsByAgency } from "@/lib/reviews-db";
 import { getDocumentsByAgency } from "@/lib/documents-db";
 import { getEmployeesByAgency, getCurrentLeavesByAgency } from "@/lib/team-db";
 import { getObservationsByAgency } from "@/lib/observations-db";
@@ -87,10 +87,10 @@ export default function AgencePage({
   useEffect(() => {
     let active = true;
     Promise.all([
-      getAllTransits(),
-      getAllPickups(),
-      getAllAppointments(),
-      getAllReviews(),
+      getTransitsByAgency(agencySlug),
+      getPickupsByAgency(agencySlug),
+      getAppointmentsByAgency(agencySlug),
+      getReviewsByAgency(agencySlug),
       getDocumentsByAgency(agencySlug),
       getEmployeesByAgency(agencySlug),
       getCurrentLeavesByAgency(agencySlug),
@@ -148,9 +148,7 @@ export default function AgencePage({
     );
   }
 
-  const transits = data.transits.filter(
-    (t) => t.from === agencySlug || t.to === agencySlug
-  );
+  const transits = data.transits;
   const sent = transits.filter((t) => t.from === agencySlug);
   const received = transits.filter((t) => t.to === agencySlug);
 
@@ -163,17 +161,13 @@ export default function AgencePage({
     0
   );
 
-  const allPickups = data.pickups.filter(
-    (p) => p.destinationAgencyId === agencySlug
-  );
+  const allPickups = data.pickups;
   const openPickups = allPickups.filter((p) => p.status !== "picked_up");
   const recentPickups = [...allPickups]
     .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
     .slice(0, 3);
 
-  const allAppointments = data.appointments.filter(
-    (a) => a.agencyId === agencySlug
-  );
+  const allAppointments = data.appointments;
   const today = new Date();
   const isSameDay = (d: Date) =>
     d.getFullYear() === today.getFullYear() &&
@@ -183,9 +177,9 @@ export default function AgencePage({
     isSameDay(new Date(a.rescheduledAt ?? a.scheduledAt))
   );
 
-  const agencyReviews = [...data.reviews]
-    .filter((r) => r.agencyId === agencySlug)
-    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+  const agencyReviews = [...data.reviews].sort((a, b) =>
+    a.createdAt < b.createdAt ? 1 : -1
+  );
   const recentReviews = agencyReviews.slice(0, 3);
 
   // === Modules Phase 1 enrichis ===

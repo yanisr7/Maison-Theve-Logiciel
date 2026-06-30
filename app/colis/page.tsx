@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AGENCIES, PICKUP_STATUS_LABEL } from "@/lib/mock";
-import { getAllPickups } from "@/lib/pickups-db";
+import { getPickupsPage } from "@/lib/pickups-db";
 import { PickupCard } from "@/components/PickupCard";
 import type { AgencySlug, Pickup, PickupStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -15,31 +15,58 @@ const STATUSES: (PickupStatus | "all")[] = [
   "picked_up",
 ];
 
+const PAGE_SIZE = 30;
+
 export default function ColisListPage() {
   const { role } = useRole();
   const [statusFilter, setStatusFilter] = useState<PickupStatus | "all">("all");
   const [agencyFilter, setAgencyFilter] = useState<AgencySlug | "all">("all");
-  const [allPickups, setAllPickups] = useState<Pickup[]>([]);
+
+  const [rows, setRows] = useState<Pickup[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  useEffect(() => {
-    getAllPickups()
-      .then((d) => {
-        setAllPickups(d);
+  // Charge une page côté base (statut passé à la requête), append si page > 1.
+  const loadPage = useCallback(
+    async (targetPage: number) => {
+      const isFirst = targetPage === 1;
+      if (isFirst) setLoading(true);
+      else setLoadingMore(true);
+      try {
+        const { rows: newRows, total: newTotal } = await getPickupsPage(
+          targetPage,
+          PAGE_SIZE,
+          statusFilter === "all" ? undefined : statusFilter
+        );
+        setTotal(newTotal);
+        setRows((prev) => (isFirst ? newRows : [...prev, ...newRows]));
+        setPage(targetPage);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+        setLoadingMore(false);
+      }
+    },
+    [statusFilter]
+  );
 
+  // Reset page=1 au changement de filtre de statut.
+  useEffect(() => {
+    loadPage(1).catch(() => {
+      setLoading(false);
+      setLoadingMore(false);
+    });
+  }, [loadPage]);
+
+  // Le filtre agence (rôle / pastilles admin) reste côté client : la fonction
+  // de pagination en base ne gère que le statut.
   const pickups = useMemo(() => {
-    let all = allPickups;
+    let all = rows;
     if (role.kind === "agency") {
       all = all.filter((p) => p.destinationAgencyId === role.agencySlug);
     } else if (agencyFilter !== "all") {
       all = all.filter((p) => p.destinationAgencyId === agencyFilter);
-    }
-    if (statusFilter !== "all") {
-      all = all.filter((p) => p.status === statusFilter);
     }
     // tri : incoming / available d'abord (à traiter), picked_up ensuite
     const order: Record<PickupStatus, number> = {
@@ -52,7 +79,9 @@ export default function ColisListPage() {
         order[a.status] - order[b.status] ||
         (a.createdAt < b.createdAt ? 1 : -1)
     );
-  }, [statusFilter, agencyFilter, role, allPickups]);
+  }, [agencyFilter, role, rows]);
+
+  const hasMore = rows.length < total;
 
   return (
     <div className="space-y-8">
@@ -131,11 +160,31 @@ export default function ColisListPage() {
           Aucun bien confié correspondant.
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2">
-          {pickups.map((p) => (
-            <PickupCard key={p.id} pickup={p} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 md:grid-cols-2">
+            {pickups.map((p) => (
+              <PickupCard key={p.id} pickup={p} />
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="flex flex-col items-center gap-2">
+              <button
+                onClick={() => loadPage(page + 1)}
+                disabled={loadingMore}
+                className={cn(
+                  "rounded-full border border-[var(--gold)] px-5 py-2 text-sm text-foreground transition-colors",
+                  "hover:bg-[var(--gold)]/10 disabled:opacity-50"
+                )}
+              >
+                {loadingMore ? "Chargement…" : "Voir plus"}
+              </button>
+              <span className="text-xs text-muted-foreground">
+                {rows.length} / {total}
+              </span>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

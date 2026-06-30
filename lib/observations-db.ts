@@ -37,37 +37,49 @@ function mapRow(r: ObsRow): Observation {
   };
 }
 
-async function fetchAll(): Promise<Observation[]> {
+export async function getAllObservations(): Promise<Observation[]> {
   const { data, error } = await supabase.from("observations").select("*");
   if (error) throw error;
   return (data as ObsRow[]).map(mapRow);
 }
 
-export async function getAllObservations(): Promise<Observation[]> {
-  return fetchAll();
-}
-
+// Filtré côté base (index agency_id, status).
 export async function getObservationsByAgency(
   agencyId: AgencySlug
 ): Promise<Observation[]> {
-  const all = await fetchAll();
-  return all.filter((o) => o.agencyId === agencyId);
+  const { data, error } = await supabase
+    .from("observations")
+    .select("*")
+    .eq("agency_id", agencyId);
+  if (error) throw error;
+  return (data as ObsRow[]).map(mapRow);
 }
 
 export async function getOpenObservationsByAgency(
   agencyId: AgencySlug
 ): Promise<Observation[]> {
-  const all = await fetchAll();
-  return all.filter((o) => o.agencyId === agencyId && o.status === "open");
+  const { data, error } = await supabase
+    .from("observations")
+    .select("*")
+    .eq("agency_id", agencyId)
+    .eq("status", "open");
+  if (error) throw error;
+  return (data as ObsRow[]).map(mapRow);
 }
 
 export async function getAllOpenObservations(
   priorityMin?: ObservationPriority
 ): Promise<Observation[]> {
   const min = priorityMin ? PRIORITY_RANK[priorityMin] : 0;
-  const all = await fetchAll();
-  return all
-    .filter((o) => o.status === "open" && PRIORITY_RANK[o.priority] >= min)
+  // Statut filtré côté base ; tri par priorité en JS (rang non lexicographique).
+  const { data, error } = await supabase
+    .from("observations")
+    .select("*")
+    .eq("status", "open");
+  if (error) throw error;
+  return (data as ObsRow[])
+    .map(mapRow)
+    .filter((o) => PRIORITY_RANK[o.priority] >= min)
     .sort(
       (a, b) =>
         PRIORITY_RANK[b.priority] - PRIORITY_RANK[a.priority] ||
