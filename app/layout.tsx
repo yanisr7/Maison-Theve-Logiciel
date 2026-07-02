@@ -6,8 +6,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "Maison Théve — Godot & Fils",
-  description: "Outil de gestion interne Godot & Fils — transit, observations, comptabilité.",
+  title: "Godot & Fils — Intranet",
+  description: "Outil de gestion interne Godot & Fils — transit, biens confiés, RDV, agences.",
 };
 
 export default function RootLayout({
